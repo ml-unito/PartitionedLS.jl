@@ -116,7 +116,7 @@ The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + 
 """
 function fit_iterative(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=0, η=1)
   M,K = size(P)
-  
+
   α = Variable(M, Positive())
   β = Variable(K)
   t = Variable()
@@ -125,13 +125,17 @@ function fit_iterative(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}
   regularization = η * norm(α,2)
   p = minimize(loss + regularization)
 
-  for i in 0:100
-    free!(β)
+  α.value = randn(M)
+  β.value = randn(K)
+
+  for i in 1:100
     fix!(α)
-    Convex.solve!(p, ECOSSolver(verbose=verbose))
+    Convex.solve!(p, ECOSSolver(verbose=verbose, warmstart = i > 1 ? true : false))
     free!(α)
+
     fix!(β)
-    Convex.solve!(p, ECOSSolver(verbose=verbose))
+    Convex.solve!(p, ECOSSolver(verbose=verbose, warmstart = true))
+    free!(β)
 
     @info optval = p.optval
   end
@@ -163,7 +167,7 @@ function fit_iterative(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}
   # a = sum((P .* a) ./ A, dims=2)
   # b = b .* A'
 
-  (p.optval, α.values, β.values, t.value, P)
+  (p.optval, α.value, β.value, t.value, P)
 end
 
 """
