@@ -70,7 +70,7 @@ function fit(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=
     p = minimize(loss + regularization)
     Convex.solve!(p, ECOSSolver(verbose=verbose))
 
-    println("iteration $b optval: $(p.optval)")
+    @debug "iteration" b "optval:" p.optval
     push!(results,(p.optval, α.value, β, t.value, P))
   end
 
