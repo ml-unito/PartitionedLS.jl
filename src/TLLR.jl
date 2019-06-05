@@ -115,7 +115,8 @@ The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + 
 
 """
 function fit_iterative(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=0, η=1)
-
+  M,K = size(P)
+  
   α = Variable(M, Positive())
   β = Variable(K)
   t = Variable()
