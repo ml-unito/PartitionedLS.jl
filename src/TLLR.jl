@@ -130,8 +130,6 @@ function fit_iterative(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}
   β.value = (rand(Float32, K) .- 0.5) .* 20
 
   for i in 1:100
-    α.value = rand(Float32, M)
-
     fix!(β)
     Convex.solve!(p, ECOSSolver(verbose=verbose))
     free!(β)
@@ -188,22 +186,31 @@ function fit_iterative_slow(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{I
 
   α.value = rand(Float32, M)
   β.value = (rand(Float32, K) .- 0.5) .* 20
+  a = α.value
+  b = β.value
+  optval = 100000
 
   for i in 1:100
-    b = β.value
+    α.value = a
     loss = sumsquares(X * (P .* (α * ones(1,K))) * b + t - y)
     p = minimize(loss + regularization, constraints)
     solve!(p, ECOSSolver(verbose=verbose))
-    @debug "with b fixed:" p.optval α b
-
     a = α.value
+
+    @debug "with b fixed:" p.optval α.value β.value
+
+    β.value = b
     loss = sumsquares(X * (P .* (a * ones(1,K))) * β + t - y)
     p = minimize(loss + regularization, constraints)
     solve!(p, ECOSSolver(verbose=verbose))
-    @debug "with a fixed:" p.optval a β
+    b = β.value
+
+    @debug "with a fixed:" p.optval α.value β.value
+
+    optval = p.optval
   end
 
-  (p.optval, α.value, β.value, t.value, P)
+  (optval, α.value, β.value, t.value, P)
 end
 
 """
