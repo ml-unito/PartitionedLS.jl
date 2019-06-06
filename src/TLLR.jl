@@ -4,7 +4,7 @@ using Convex
 using ECOS
 
 import Base.size
-export fit, fit_iterative, predict
+export fit, fit_iterative, fit_iterative_slow, predict
 using LinearAlgebra
 
 """
@@ -120,24 +120,29 @@ function fit_iterative(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}
   α = Variable(M, Positive())
   β = Variable(K)
   t = Variable()
+  constraints =  P' * α == ones(K)
 
   loss = sumsquares(X * (P .* (α * ones(1,K))) * β + t - y)
   regularization = η * norm(α,2)
-  p = minimize(loss + regularization)
+  p = minimize(loss + regularization, constraints)
 
-  α.value = randn(M)
-  β.value = randn(K)
+  α.value = rand(Float32, M)
+  β.value = (rand(Float32, K) .- 0.5) .* 20
 
   for i in 1:100
-    fix!(α)
-    Convex.solve!(p, ECOSSolver(verbose=verbose, warmstart = i > 1 ? true : false))
-    free!(α)
+    α.value = rand(Float32, M)
 
     fix!(β)
-    Convex.solve!(p, ECOSSolver(verbose=verbose, warmstart = true))
+    Convex.solve!(p, ECOSSolver(verbose=verbose))
     free!(β)
 
-    @info optval = p.optval
+    @debug "optval (β fixed)" p.optval  α.value  β.value
+
+    fix!(α)
+    Convex.solve!(p, ECOSSolver(verbose=verbose))
+    free!(α)
+
+    @debug "optval (α fixed)"  p.optval α.value β.value
   end
 
   # # row normalization
@@ -166,6 +171,37 @@ function fit_iterative(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}
   # A = sum(P .* a, dims=1)
   # a = sum((P .* a) ./ A, dims=2)
   # b = b .* A'
+
+  (p.optval, α.value, β.value, t.value, P)
+end
+
+
+
+function fit_iterative_slow(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=0, η=1)
+  M,K = size(P)
+
+  α = Variable(M, Positive())
+  β = Variable(K)
+  t = Variable()
+  constraints =  P' * α == ones(K)
+  regularization = η * norm(α,2)
+
+  α.value = rand(Float32, M)
+  β.value = (rand(Float32, K) .- 0.5) .* 20
+
+  for i in 1:100
+    b = β.value
+    loss = sumsquares(X * (P .* (α * ones(1,K))) * b + t - y)
+    p = minimize(loss + regularization, constraints)
+    solve!(p, ECOSSolver(verbose=verbose))
+    @debug "with b fixed:" p.optval α b
+
+    a = α.value
+    loss = sumsquares(X * (P .* (a * ones(1,K))) * β + t - y)
+    p = minimize(loss + regularization, constraints)
+    solve!(p, ECOSSolver(verbose=verbose))
+    @debug "with a fixed:" p.optval a β
+  end
 
   (p.optval, α.value, β.value, t.value, P)
 end
