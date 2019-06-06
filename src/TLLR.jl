@@ -71,7 +71,7 @@ function fit(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=
     Convex.solve!(p, ECOSSolver(verbose=verbose))
 
     @debug "iteration" b "optval:" p.optval
-    push!(results,(p.optval, α.value, β, t.value, P))
+    push!(results,(p.optval, α.value, β.value, t.value, P))
   end
 
   optindex = argmin((z -> z[1]).(results))
@@ -190,14 +190,14 @@ function fit_iterative_slow(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{I
   b = β.value
   optval = 100000
 
-  for i in 1:100
+  for i in 1:20
     α.value = a
     loss = sumsquares(X * (P .* (α * ones(1,K))) * b + t - y)
     p = minimize(loss + regularization, constraints)
     solve!(p, ECOSSolver(verbose=verbose))
     a = α.value
 
-    @debug "with b fixed:" p.optval α.value β.value
+    @debug "with b fixed | a: $(α.value) b: $b" p.optval
 
     β.value = b
     loss = sumsquares(X * (P .* (a * ones(1,K))) * β + t - y)
@@ -205,12 +205,12 @@ function fit_iterative_slow(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{I
     solve!(p, ECOSSolver(verbose=verbose))
     b = β.value
 
-    @debug "with a fixed:" p.optval α.value β.value
+    @debug "with a fixed | a: $a b: $(β.value)" p.optval
 
     optval = p.optval
   end
 
-  (optval, α.value, β.value, t.value, P)
+  (optval, a, b, t.value, P)
 end
 
 """
