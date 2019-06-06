@@ -71,7 +71,7 @@ function fit(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=
     Convex.solve!(p, ECOSSolver(verbose=verbose))
 
     @debug "iteration" b "optval:" p.optval
-    push!(results,(p.optval, α.value, β.value, t.value, P))
+    push!(results,(p.optval, α.value, β, t.value, P))
   end
 
   optindex = argmin((z -> z[1]).(results))
