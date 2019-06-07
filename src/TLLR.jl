@@ -65,7 +65,8 @@ function fit(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=
     t = Variable()
     β = indextobeta(b,K)
 
-    loss = sumsquares(X * (P .* (α * ones(1,K))) * β + t - y) + η * sumsquares(α)
+    # loss = sumsquares(X * (P .* (α * ones(1,K))) * β + t - y) + η * sumsquares(α)
+    loss = sumsquares(X * (P .* (α * ones(1,K))) * β + t - y) + η * sumsquares(P' * α)
 
     p = minimize(loss)
     Convex.solve!(p, ECOSSolver(verbose=verbose))
