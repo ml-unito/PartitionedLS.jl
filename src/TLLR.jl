@@ -54,7 +54,7 @@ A tuple of the form: `(opt, a, b, t, P)`
 The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + t\$.
 
 """
-function fit(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=0, η=1)
+function fit(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=0, η=1.0)
   # row normalization
   M,K = size(P)
 
@@ -65,9 +65,9 @@ function fit(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=
     t = Variable()
     β = indextobeta(b,K)
 
-    loss = sumsquares(X * (P .* (α * ones(1,K))) * β + t - y)
-    regularization = η * norm(α,2)
-    p = minimize(loss + regularization)
+    loss = sumsquares(X * (P .* (α * ones(1,K))) * β + t - y) + η * sumsquares(α)
+
+    p = minimize(loss)
     Convex.solve!(p, ECOSSolver(verbose=verbose))
 
     @debug "iteration" b "optval:" p.optval
@@ -122,9 +122,8 @@ function fit_iterative(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}
   t = Variable()
   constraints =  P' * α == ones(K)
 
-  loss = sumsquares(X * (P .* (α * ones(1,K))) * β + t - y)
-  regularization = η * norm(α,2)
-  p = minimize(loss + regularization, constraints)
+  loss = sumsquares(X * (P .* (α * ones(1,K))) * β + t - y) + η * sumsquares(β)
+  p = minimize(loss, constraints)
 
   α.value = rand(Float32, M)
   β.value = (rand(Float32, K) .- 0.5) .* 20
@@ -175,14 +174,13 @@ end
 
 
 
-function fit_iterative_slow(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=0, η=1)
+function fit_iterative_slow(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=0, η=1.0, N=20)
   M,K = size(P)
 
   α = Variable(M, Positive())
   β = Variable(K)
   t = Variable()
   constraints =  P' * α == ones(K)
-  regularization = η * norm(α,2)
 
   α.value = rand(Float32, M)
   β.value = (rand(Float32, K) .- 0.5) .* 20
@@ -190,18 +188,18 @@ function fit_iterative_slow(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{I
   b = β.value
   optval = 100000
 
-  for i in 1:20
+  for i in 1:N
     α.value = a
-    loss = sumsquares(X * (P .* (α * ones(1,K))) * b + t - y)
-    p = minimize(loss + regularization, constraints)
+    loss = sumsquares(X * (P .* (α * ones(1,K))) * b + t - y) + η * norm(b,2)^2
+    p = minimize(loss, constraints)
     solve!(p, ECOSSolver(verbose=verbose))
     a = α.value
 
     @debug "with b fixed | a: $(α.value) b: $b" p.optval
 
     β.value = b
-    loss = sumsquares(X * (P .* (a * ones(1,K))) * β + t - y)
-    p = minimize(loss + regularization, constraints)
+    loss = sumsquares(X * (P .* (a * ones(1,K))) * β + t - y) + η * sumsquares(β)
+    p = minimize(loss, constraints)
     solve!(p, ECOSSolver(verbose=verbose))
     b = β.value
 
