@@ -17,9 +17,11 @@ version = "2.1.0"
 
 [[Convex]]
 deps = ["LinearAlgebra", "MathProgBase", "OrderedCollections", "SparseArrays"]
-git-tree-sha1 = "ad3f87511256ba51a76d5bed792f4ef4157b2400"
+git-tree-sha1 = "cdaaeb042a6930e2d65c6d35f8a296bdbdbb74fc"
+repo-rev = "master"
+repo-url = "https://github.com/JuliaOpt/Convex.jl.git"
 uuid = "f65535da-76fb-5f13-bab9-19810c17039a"
-version = "0.12.0"
+version = "0.12.1"
 
 [[Dates]]
 deps = ["Printf"]

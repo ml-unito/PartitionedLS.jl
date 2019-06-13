@@ -15,5 +15,5 @@ P = [[1 0];
      [0 1]]
 
 
-result = fit_iterative_slow(X, y, P, verbose=0)
+result = fit_iterative(X, y, P, verbose=0)
 result_opt = fit(X, y, P, verbose=0)

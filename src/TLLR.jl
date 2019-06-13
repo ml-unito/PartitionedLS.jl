@@ -131,13 +131,13 @@ function fit_iterative(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}
 
   for i in 1:100
     fix!(β)
-    Convex.solve!(p, ECOSSolver(verbose=verbose))
+    Convex.solve!(p, ECOSSolver(verbose=verbose, warmstart=(i == 1 ? true : false)))
     free!(β)
 
     @debug "optval (β fixed)" p.optval  α.value  β.value
 
     fix!(α)
-    Convex.solve!(p, ECOSSolver(verbose=verbose))
+    Convex.solve!(p, ECOSSolver(verbose=verbose, warmstart=true))
     free!(α)
 
     @debug "optval (α fixed)"  p.optval α.value β.value
