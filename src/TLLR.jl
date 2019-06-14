@@ -115,7 +115,7 @@ A tuple of the form: `(opt, a, b, t, P)`
 The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + t\$.
 
 """
-function fit_iterative(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=0, η=1)
+function fit_iterative(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=0, η=1, N=20)
   M,K = size(P)
 
   α = Variable(M, Positive())
@@ -129,7 +129,7 @@ function fit_iterative(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}
   α.value = rand(Float32, M)
   β.value = (rand(Float32, K) .- 0.5) .* 20
 
-  for i in 1:100
+  for i in 1:N
     fix!(β)
     Convex.solve!(p, ECOSSolver(verbose=verbose, warmstart=(i == 1 ? true : false)))
     free!(β)
