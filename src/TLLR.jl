@@ -66,7 +66,7 @@ function fit(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=
     β = indextobeta(b,K)
 
     # loss = sumsquares(X * (P .* (α * ones(1,K))) * β + t - y) + η * sumsquares(α)
-    loss = sumsquares(X * (P .* (α * ones(1,K))) * β + t - y) + η * (sumsquares(P' * α) + t^2)
+    loss = sumsquares(X * (P .* (α * ones(1,K))) * β + t - y) + η * (sumsquares(P' * α) + t*t)
 
     p = minimize(loss)
     Convex.solve!(p, ECOSSolver(verbose=verbose))
@@ -123,7 +123,7 @@ function fit_iterative(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}
   t = Variable()
   constraints =  P' * α == ones(K)
 
-  loss = sumsquares(X * (P .* (α * ones(1,K))) * β + t - y) + η * (sumsquares(β) + t^2)
+  loss = sumsquares(X * (P .* (α * ones(1,K))) * β + t - y) + η * (sumsquares(β) + t*t)
   p = minimize(loss, constraints)
 
   α.value = rand(Float32, M)
@@ -191,7 +191,7 @@ function fit_iterative_slow(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{I
 
   for i in 1:N
     α.value = a
-    loss = sumsquares(X * (P .* (α * ones(1,K))) * b + t - y) + η * (norm(b,2)^2 + t^2)
+    loss = sumsquares(X * (P .* (α * ones(1,K))) * b + t - y) + η * (norm(b,2)^2 + t*t)
     p = minimize(loss, constraints)
     solve!(p, ECOSSolver(verbose=verbose))
     a = α.value
@@ -199,7 +199,7 @@ function fit_iterative_slow(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{I
     @debug "with b fixed | a: $(α.value) b: $b" p.optval
 
     β.value = b
-    loss = sumsquares(X * (P .* (a * ones(1,K))) * β + t - y) + η * (sumsquares(β) + t^2)
+    loss = sumsquares(X * (P .* (a * ones(1,K))) * β + t - y) + η * (sumsquares(β) + t*t)
     p = minimize(loss, constraints)
     solve!(p, ECOSSolver(verbose=verbose))
     b = β.value
