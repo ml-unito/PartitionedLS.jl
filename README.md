@@ -4,12 +4,17 @@ Linear least squares is one of the most widely used regression methods in all th
 
 # To install this library
 
-Just add it as a dependency to your Julia environment:
+Just add it as a dependency to your Julia environment. Launch julia from the main directory of your project and enter the following commands:
 
 ```julia
+# Opens the package manager REPL
 ]
+
+# Activate you local environment (can be skipped if you want to install the library globally)
+activate .
+
+# Adds the library to the environment
 add git@github.com:ml-unito/PartitionedLS.git
-update
 ```
 
 # To use this library
