@@ -1,4 +1,4 @@
-using TLLR: fit_iterative, fit_iterative_slow, fit
+using PartitionedLS: fit_iterative, fit_iterative_slow, fit
 
 X = [[1. 2. 3.]; 
      [3. 3. 4.]; 

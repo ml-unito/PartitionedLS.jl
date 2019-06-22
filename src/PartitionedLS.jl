@@ -1,4 +1,4 @@
-module TLLR
+module PartitionedLS
 
 using Convex
 using ECOS
@@ -28,7 +28,7 @@ end
 """
     fit(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; beta=randomvalues)
 
-Fits a TLLRegression model to the given data and resturns the
+Fits a PartialLS Regression model to the given data and resturns the
 learnt model (see the Result section).
 
 # Arguments
@@ -90,7 +90,7 @@ end
 """
     fit_iterative(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; beta=randomvalues)
 
-Fits a block least squares model by alternating the optimization of the α and β variables.
+Fits a PartitionedLS model by alternating the optimization of the α and β variables.
 
 # Arguments
 
