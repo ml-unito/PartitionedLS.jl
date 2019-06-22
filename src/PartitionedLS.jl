@@ -4,7 +4,7 @@ using Convex
 using ECOS
 
 import Base.size
-export fit, fit_iterative, fit_iterative_slow, predict
+export fit, fit_alternating, fit_alternating_slow, predict
 using LinearAlgebra
 
 """
@@ -88,7 +88,7 @@ end
 
 
 """
-    fit_iterative(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; beta=randomvalues)
+    fit_alternating(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; beta=randomvalues)
 
 Fits a PartitionedLS model by alternating the optimization of the α and β variables.
 
@@ -115,7 +115,7 @@ A tuple of the form: `(opt, a, b, t, P)`
 The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + t\$.
 
 """
-function fit_iterative(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=0, η=1, N=20)
+function fit_alternating(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=0, η=1, N=20)
   M,K = size(P)
 
   α = Variable(M, Positive())
@@ -143,39 +143,15 @@ function fit_iterative(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}
     @debug "optval (α fixed)"  p.optval α.value β.value
   end
 
-  # # row normalization
-  # M,K = size(P)
-
-  # results = []
-
-  # for b in 0:(2^K-1)
-  #   α = Variable(M, Positive())
-  #   t = Variable()
-  #   β = indextobeta(b,K)
-
-  #   loss = sumsquares(X * (P .* (α * ones(1,K))) * β + t - y)
-  #   regularization = η * norm(α,2)
-  #   p = minimize(loss + regularization)
-  #   Convex.solve!(p, ECOSSolver(verbose=verbose))
-
-  #   @debug "iteration" b "optval:" p.optval
-  #   push!(results,(p.optval, α.value, β, t.value, P))
-  # end
-
-  # optindex = argmin((z -> z[1]).(results))
-  # opt,a,b,t,_ = results[optindex]
-
-
-  # A = sum(P .* a, dims=1)
-  # a = sum((P .* a) ./ A, dims=2)
-  # b = b .* A'
-
   (p.optval, α.value, β.value, t.value, P)
 end
 
 
+# This function implements the same algorithm as fit_alternating, but it works around a bug 
+# in the CVX library that prevented fix! and free! to work as intended. The current version
+# of the library fixes the bug, so this function should not be called (just use fix_iterative).
 
-function fit_iterative_slow(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=0, η=1.0, N=20)
+function fit_alternating_slow(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=0, η=1.0, N=20)
   M,K = size(P)
 
   α = Variable(M, Positive())

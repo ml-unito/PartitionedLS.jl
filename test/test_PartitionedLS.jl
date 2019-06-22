@@ -1,4 +1,4 @@
-using PartitionedLS: fit_iterative, fit_iterative_slow, fit
+using PartitionedLS: fit_alternating, fit_alternating_slow, fit
 
 X = [[1. 2. 3.]; 
      [3. 3. 4.]; 
@@ -15,5 +15,5 @@ P = [[1 0];
      [0 1]]
 
 
-result = fit_iterative(X, y, P, verbose=0)
+result = fit_alternating(X, y, P, verbose=0)
 result_opt = fit(X, y, P, verbose=0)
