@@ -54,7 +54,7 @@ A tuple of the form: `(opt, a, b, t, P)`
 The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + t\$.
 
 """
-function fit(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=0, η=1.0)
+function fit(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=0, η=1.0, Solver=solver, initial_solution=[])
   # row normalization
   M,K = size(P)
 
@@ -69,7 +69,7 @@ function fit(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=
     loss = sumsquares(X * (P .* (α * ones(1,K))) * β + t - y) + η * (sumsquares(P' * α) + t*t)
 
     p = minimize(loss)
-    Convex.solve!(p, ECOSSolver(verbose=verbose))
+    Convex.solve!(p, solver(verbose=verbose, warmstart=(initial_solution == [] ? false : initial_solution)))
 
     @debug "iteration" b "optval:" p.optval
     push!(results,(p.optval, α.value, β, t.value, P))
