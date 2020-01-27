@@ -68,6 +68,7 @@ function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
   results = []
 
   for b in 0:(2^K-1)
+    @debug "Starting iteration $b/$(2^K-1)"
     α = Variable(M, Positive())
     t = Variable()
     β = indextobeta(b,K)
@@ -78,7 +79,7 @@ function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
     p = minimize(loss)
     Convex.solve!(p, get_solver())
 
-    @debug "iteration" b "optval:" p.optval
+    @debug "iteration $b optval:" p.optval
     push!(results,(p.optval, α.value, β, t.value, P))
   end
 
