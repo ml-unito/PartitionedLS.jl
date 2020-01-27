@@ -1,11 +1,14 @@
-module PartitionedLS
+# module PartitionedLS
 
 using Convex
-using ECOS
 
 import Base.size
 export fit, fit_alternating, fit_alternating_slow, predict
 using LinearAlgebra
+using ECOS
+
+struct Opt end
+struct Alt end
 
 """
   indextobeta(b::Integer, K::Integer)::Array{Int64,1}
@@ -25,12 +28,12 @@ function indextobeta(b::Integer, K::Integer)
   result
 end
 
-function getECOSSolver()
-  return ECOSSolver(verbose=verbose)
+function get_ECOSSolver()
+  return ECOSSolver()
 end
 
 """
-    fit(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; beta=randomvalues)
+    fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; beta=randomvalues)
 
 Fits a PartialLS Regression model to the given data and resturns the
 learnt model (see the Result section).
@@ -42,8 +45,8 @@ learnt model (see the Result section).
 * `P`: \$M × K\$ matrix specifying how to partition the \$M\$ attributes into
     \$K\$ subsets. \$P_{m,k}\$ should be 1 if attribute number \$m\$ belongs to
     partition \$k\$.
-* `verbose`: if true (or 1) the output of solver will be shown
 * `η`: regularization factor, higher values implies more regularized solutions
+* `get_solver`: a function returning the solver to be used. Defaults to () -> ECOSSolver()
 
 # Result
 
@@ -58,7 +61,7 @@ A tuple of the form: `(opt, a, b, t, P)`
 The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + t\$.
 
 """
-function fit(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η=1.0, solver = get_ECOSSolver)
+function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η=1.0, get_solver = get_ECOSSolver)
   # row normalization
   M,K = size(P)
 
@@ -73,7 +76,7 @@ function fit(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η=1.0, 
     loss = sumsquares(X * (P .* (α * ones(1,K))) * β + t - y) + η * (sumsquares(P' * α) + t*t)
 
     p = minimize(loss)
-    Convex.solve!(p, solver())
+    Convex.solve!(p, get_solver())
 
     @debug "iteration" b "optval:" p.optval
     push!(results,(p.optval, α.value, β, t.value, P))
@@ -92,7 +95,7 @@ end
 
 
 """
-    fit_alternating(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; beta=randomvalues)
+    fit_alternating(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; beta=randomvalues)
 
 Fits a PartitionedLS model by alternating the optimization of the α and β variables.
 
@@ -103,8 +106,9 @@ Fits a PartitionedLS model by alternating the optimization of the α and β vari
 * `P`: \$M × K\$ matrix specifying how to partition the \$M\$ attributes into
     \$K\$ subsets. \$P_{m,k}\$ should be 1 if attribute number \$m\$ belongs to
     partition \$k\$.
-* `verbose`: if true (or 1) the output of solver will be shown
 * `η`: regularization factor, higher values implies more regularized solutions
+* `N`: number of alternating loops to be performed, defaults to 20.
+* `get_solver`: a function returning the solver to be used. Defaults to () -> ECOSSolver()
 
 # Result
 
@@ -119,7 +123,7 @@ A tuple of the form: `(opt, a, b, t, P)`
 The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + t\$.
 
 """
-function fit_alternating(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=0, η=1, N=20)
+function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η=1, N=20, get_solver = get_ECOSSolver)
   M,K = size(P)
 
   α = Variable(M, Positive())
@@ -135,13 +139,13 @@ function fit_alternating(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,
 
   for i in 1:N
     fix!(β)
-    Convex.solve!(p, ECOSSolver(verbose=verbose, warmstart=(i == 1 ? true : false)))
+    Convex.solve!(p, get_solver())
     free!(β)
 
     @debug "optval (β fixed)" p.optval  α.value  β.value
 
     fix!(α)
-    Convex.solve!(p, ECOSSolver(verbose=verbose, warmstart=true))
+    Convex.solve!(p, get_solver())
     free!(α)
 
     @debug "optval (α fixed)"  p.optval α.value β.value
@@ -206,4 +210,4 @@ function predict(model, X::Array{Float64,2})
   X * (P .* α) * β .+ t
 end
 
-end
+# end
