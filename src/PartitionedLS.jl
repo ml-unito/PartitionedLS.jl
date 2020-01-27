@@ -1,4 +1,4 @@
-# module PartitionedLS
+module PartitionedLS
 
 using Convex
 
@@ -210,4 +210,4 @@ function predict(model, X::Array{Float64,2})
   X * (P .* α) * β .+ t
 end
 
-# end
+end
