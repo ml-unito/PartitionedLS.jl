@@ -2,8 +2,9 @@ module PartitionedLS
 
 using Convex
 
+export fit, fit_alternating_slow, predict, Opt
+
 import Base.size
-export fit, fit_alternating, fit_alternating_slow, predict
 using LinearAlgebra
 using ECOS
 
@@ -61,19 +62,20 @@ A tuple of the form: `(opt, a, b, t, P)`
 The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + t\$.
 
 """
-function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η=1.0, get_solver = get_ECOSSolver)
+function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η=1.0, get_solver = get_ECOSSolver, checkpoint = x -> Nothing, resume )
   # row normalization
   M,K = size(P)
 
   results = []
 
-  for b in 0:(2^K-1)
+  b_start, results = resume()
+
+  for b in b_start:(2^K-1)
     @debug "Starting iteration $b/$(2^K-1)"
     α = Variable(M, Positive())
     t = Variable()
     β = indextobeta(b,K)
 
-    # loss = sumsquares(X * (P .* (α * ones(1,K))) * β + t - y) + η * sumsquares(α)
     loss = sumsquares(X * (P .* (α * ones(1,K))) * β + t - y) + η * (sumsquares(P' * α) + t*t)
 
     p = minimize(loss)
@@ -81,6 +83,8 @@ function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
 
     @debug "iteration $b optval:" p.optval
     push!(results,(p.optval, α.value, β, t.value, P))
+
+    checkpoint((b, results))
   end
 
   optindex = argmin((z -> z[1]).(results))
