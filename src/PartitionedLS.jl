@@ -146,7 +146,7 @@ function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
 
   i_start, α.value, β.value, t.value, p.optval = resume(initvals)
 
-  for i in i_start:N
+  for i in (i_start+1):N
     fix!(β)
     Convex.solve!(p, get_solver())
     free!(β)
