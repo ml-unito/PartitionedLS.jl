@@ -70,7 +70,7 @@ function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
 
   b_start, results = resume()
 
-  for b in b_start:(2^K-1)
+  for b in (b_start+1):(2^K-1)
     @debug "Starting iteration $b/$(2^K-1)"
     α = Variable(M, Positive())
     t = Variable()
