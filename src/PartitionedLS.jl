@@ -158,7 +158,7 @@ function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
     free!(α)
 
     @debug "optval (α fixed)"  p.optval α.value β.value
-    checkpoint(i, α.value, β.value, t.value, p.optval)
+    checkpoint((i, α.value, β.value, t.value, p.optval))
   end
 
   (p.optval, α.value, β.value, t.value, P)
