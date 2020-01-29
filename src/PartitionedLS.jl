@@ -2,7 +2,7 @@ module PartitionedLS
 
 using Convex
 
-export fit, fit_alternating_slow, predict, Opt
+export fit, fit_alternating_slow, predict, Opt, Alt
 
 import Base.size
 using LinearAlgebra
