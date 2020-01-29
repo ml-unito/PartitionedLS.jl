@@ -62,13 +62,11 @@ A tuple of the form: `(opt, a, b, t, P)`
 The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + t\$.
 
 """
-function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η=1.0, get_solver = get_ECOSSolver, checkpoint = x -> Nothing, resume )
+function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η=1.0, get_solver = get_ECOSSolver, checkpoint = data -> Nothing, resume = init -> init )
   # row normalization
   M,K = size(P)
 
-  results = []
-
-  b_start, results = resume()
+  b_start, results = resume((-1, []))
 
   for b in (b_start+1):(2^K-1)
     @debug "Starting iteration $b/$(2^K-1)"
@@ -128,7 +126,9 @@ A tuple of the form: `(opt, a, b, t, P)`
 The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + t\$.
 
 """
-function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η=1, N=20, get_solver = get_ECOSSolver)
+function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; 
+              η=1, N=20, get_solver = get_ECOSSolver,
+              checkpoint = (data) -> Nothing, resume = (init) -> init)
   M,K = size(P)
 
   α = Variable(M, Positive())
@@ -140,9 +140,13 @@ function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
   p = minimize(loss, constraints)
 
   α.value = rand(Float32, M)
-  β.value = (rand(Float32, K) .- 0.5) .* 20
+  β.value = (rand(Float32, K) .- 0.5) .* 10
+  t.value = rand(Float32, 1)
+  initvals = (0, α.value, β.value, t.value, p.optval)
 
-  for i in 1:N
+  i_start, α.value, β.value, t.value, p.optval = resume(initvals)
+
+  for i in i_start:N
     fix!(β)
     Convex.solve!(p, get_solver())
     free!(β)
@@ -154,6 +158,7 @@ function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
     free!(α)
 
     @debug "optval (α fixed)"  p.optval α.value β.value
+    checkpoint(i, α.value, β.value, t.value, p.optval)
   end
 
   (p.optval, α.value, β.value, t.value, P)
