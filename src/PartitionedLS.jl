@@ -7,6 +7,7 @@ export fit, fit_alternating_slow, predict, Opt, Alt
 import Base.size
 using LinearAlgebra
 using ECOS
+using NonNegLeastSquares
 
 struct Opt end
 struct Alt end
@@ -32,6 +33,56 @@ end
 function get_ECOSSolver()
   return ECOSSolver()
 end
+
+function vec1(n)
+  result = zeros(1,n)
+  result[n] = 1
+  result
+end
+
+"""
+  Returns the matrix obtained multiplying each element in X to the associated
+  weight in β. 
+"""
+function bmatrix(X, P, β)
+  Pβ = P .* β'
+  featuremul = sum(Pβ, dims=2)
+  X .* featuremul'
+end
+
+function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; get_solver = get_ECOSSolver, checkpoint = data -> Nothing, resume = init -> init)
+  @debug "Regularization parameter not set: Opt algorithm fitting  using non negative least square algorithm"
+  Xo = hcat(X, ones(size(X,1),1))
+  Po = vcat( hcat(P, zeros(size(P,1))), vec1(size(P,2)+1))
+
+  M,K = size(Po)
+
+  b_start, results = resume((-1, []))
+
+  for b in (b_start+1):(2^K-1)
+    @debug "Starting iteration $b/$(2^K-1)"
+    β = indextobeta(b,K)
+    Xb = bmatrix(Xo, Po, β)
+    α = nonneg_lsq(Xb, y)
+    optval = norm(Xo * (Po .* α) * β - y)
+
+    @debug "iteration $b optval:" optval
+    push!(results,(optval, α[1:(end-1)], β[1:(end-1)], β[end], P))
+
+    checkpoint((b, results))
+  end
+
+  optindex = argmin((z -> z[1]).(results))
+  opt,a,b,t,_ = results[optindex]
+
+
+  A = sum(P .* a, dims=1)
+  a = sum((P .* a) ./ A, dims=2)
+  b = b .* A'
+
+  (opt, a, b, t, P)
+end
+
 
 """
     fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; beta=randomvalues)
@@ -62,7 +113,9 @@ A tuple of the form: `(opt, a, b, t, P)`
 The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + t\$.
 
 """
-function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η=1.0, get_solver = get_ECOSSolver, checkpoint = data -> Nothing, resume = init -> init )
+function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, η; get_solver = get_ECOSSolver, checkpoint = data -> Nothing, resume = init -> init )
+  @debug "Regularization parameter set: Opt algorithm fitting using standard convex solver"
+
   # row normalization
   M,K = size(P)
 
