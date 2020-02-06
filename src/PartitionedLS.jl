@@ -68,6 +68,10 @@ function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
     Xb = bmatrix(Xo, Po, β)
     α = nonneg_lsq(Xb, y, alg=:nnls)
     optval = norm(Xo * (Po .* α) * β - y)
+
+    if any(==(0), sum(P .* a, dims=1))
+      @warn "found group containing all zeros:" α = α β = β sumα = sum(P .* a, dims=1)
+    end
     
     result = (optval, α[1:(end-1)], β[1:(end-1)], β[end] * α[end], P)
     push!(results,result)
