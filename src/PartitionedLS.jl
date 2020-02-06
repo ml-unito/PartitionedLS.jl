@@ -1,14 +1,12 @@
 module PartitionedLS
 
 using Convex
-using NNLS
-
 export fit, fit_alternating_slow, predict, Opt, Alt, OptNNLS, AltNNLS
 
 import Base.size
 using LinearAlgebra
 using ECOS
-# using NonNegLeastSquares
+using NonNegLeastSquares
 
 struct Opt end
 struct Alt end
@@ -68,7 +66,7 @@ function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
     @debug "Starting iteration $b/$(2^K-1)"
     β = indextobeta(b,K)
     Xb = bmatrix(Xo, Po, β)
-    α = nnls(Xb, y)
+    α = nonneg_lsq(Xb, y)
     optval = norm(Xo * (Po .* α) * β - y)
     
     result = (optval, α[1:(end-1)], β[1:(end-1)], β[end] * α[end], P)
@@ -193,7 +191,7 @@ function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
 
     Poβ = sum(Po .* β', dims=2)
     Xoβ = Xo .* Poβ'
-    α = nnls(Xoβ, y)
+    α = nonneg_lsq(Xoβ, y)
     α = checkalpha(α, Po)
 
     sumα = sum(Po .* α, dims=1)
@@ -203,7 +201,7 @@ function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
 
     @debug "optval (β fixed): $(loss(α, β))"
 
-    # nnls problem with fixed alpha variables
+    # ls problem with fixed alpha variables
 
     Xoα = Xo * (Po .* α)
     β = (Xoα' * Xoα)^-1 * Xoα' * y
