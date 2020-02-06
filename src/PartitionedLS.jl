@@ -69,8 +69,8 @@ function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
     α = nonneg_lsq(Xb, y, alg=:nnls)
     optval = norm(Xo * (Po .* α) * β - y)
 
-    if any(==(0), sum(P .* α, dims=1))
-      @warn "found group containing all zeros:" α = α β = β sumα = sum(P .* α, dims=1)
+    if any(==(0), sum(Po .* α, dims=1))
+      @warn "found group containing all zeros:" α = α β = β sumα = sum(Po .* α, dims=1)
     end
     
     result = (optval, α[1:(end-1)], β[1:(end-1)], β[end] * α[end], P)
