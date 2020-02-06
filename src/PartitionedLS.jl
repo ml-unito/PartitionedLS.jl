@@ -200,8 +200,8 @@ function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
     β = β .* sumα'
 
 
-    if findall(α .== NaN) != []
-      @warn "found α containing NaN values: $α"
+    if any(isnan, α)
+      @warn "found α containing NaN values: $α iteration: $i β: $β"
     end
 
     @debug "optval (β fixed): $(loss(α, β))"
