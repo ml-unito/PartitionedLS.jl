@@ -165,7 +165,7 @@ function checkalpha(a, P)
     end
   end
 
-  a
+  return a
 end
 
 
@@ -198,6 +198,11 @@ function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
     Poα = sum(Po .* sumα, dims=2)
     α = α ./ Poα
     β = β .* sumα'
+
+
+    if findall(α .== NaN) != []
+      @warn "found α containing NaN values: $α"
+    end
 
     @debug "optval (β fixed): $(loss(α, β))"
 
