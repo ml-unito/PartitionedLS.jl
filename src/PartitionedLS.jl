@@ -83,8 +83,10 @@ function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
   opt,a,b,t,_ = results[optindex]
     
   A = sum(P .* a, dims=1)
-  a = sum((P .* a) ./ A, dims=2)
   b = b .* A'
+
+  A[A.==0.0] .= 1.0 # substituting all 0.0 with 1.0
+  a = sum((P .* a) ./ A, dims=2)
 
   (opt, a, b, t, P)
 end
