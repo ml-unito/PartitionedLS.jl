@@ -66,7 +66,7 @@ function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
     @debug "Starting iteration $b/$(2^K-1)"
     β = indextobeta(b,K)
     Xb = bmatrix(Xo, Po, β)
-    α = nonneg_lsq(Xb, y)
+    α = nonneg_lsq(Xb, y, alg=:nnls)
     optval = norm(Xo * (Po .* α) * β - y)
     
     result = (optval, α[1:(end-1)], β[1:(end-1)], β[end] * α[end], P)
@@ -191,7 +191,7 @@ function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
 
     Poβ = sum(Po .* β', dims=2)
     Xoβ = Xo .* Poβ'
-    α = nonneg_lsq(Xoβ, y)
+    α = nonneg_lsq(Xoβ, y, alg=:nnls)
     α = checkalpha(α, Po)
 
     sumα = sum(Po .* α, dims=1)
