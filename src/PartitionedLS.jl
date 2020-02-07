@@ -215,7 +215,7 @@ function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
     # ls problem with fixed alpha variables
 
     Xoα = Xo * (Po .* α)
-    β = (Xoα' * Xoα)^-1 * Xoα' * y
+    β = Xoα \ y
     optval = loss(α, β)
     @debug "optval (α fixed)  $optval"
     
