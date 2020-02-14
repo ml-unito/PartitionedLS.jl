@@ -51,7 +51,11 @@ function bmatrix(X, P, β)
   X .* featuremul'
 end
 
-function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η = 0.0, get_solver = get_ECOSSolver, checkpoint = data -> Nothing, resume = init -> init)
+function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η = 0.0, get_solver = get_ECOSSolver, checkpoint = data -> Nothing, resume = init -> init, fake_run = false)
+  if fake_run
+    return ()
+  end
+
   if η != 0.0
     @warn "PartitionedLS (Opt): fit called with NNLS option and η != 0. Assuming η==0"
   end
@@ -125,7 +129,11 @@ A tuple of the form: `(opt, a, b, t, P)`
 The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + t\$.
 
 """
-function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η = 1.0, get_solver = get_ECOSSolver, checkpoint = data -> Nothing, resume = init -> init )
+function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η = 1.0, get_solver = get_ECOSSolver, checkpoint = data -> Nothing, resume = init -> init, fake_run = false )
+  if fake_run
+    return ()
+  end
+
   @debug "Regularization parameter set: Opt algorithm fitting using standard convex solver"
   
   # row normalization
@@ -180,7 +188,10 @@ end
 
 
 function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η = 0.0, N=20, get_solver = get_ECOSSolver,
-  checkpoint = (data) -> Nothing, resume = (init) -> init)
+  checkpoint = (data) -> Nothing, resume = (init) -> init, fake_run = false)
+  if fake_run
+    return ()
+  end
 
   if η != 0.0
     @warn "PartitionedLS (Alt): fit called with NNLS option and η != 0. Assuming η==0"
@@ -267,8 +278,12 @@ The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + 
 
 """
 function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; 
-  η=1.0, N=20, get_solver = get_ECOSSolver,
-  checkpoint = (data) -> Nothing, resume = (init) -> init)
+  η=1.0, N=20, get_solver = get_ECOSSolver,  checkpoint = (data) -> Nothing, resume = (init) -> init, fake_run = false)
+
+  if fake_run
+    return ()
+  end
+  
   M,K = size(P)
   
   α = Variable(M, Positive())
