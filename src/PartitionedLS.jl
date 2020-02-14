@@ -51,7 +51,11 @@ function bmatrix(X, P, β)
   X .* featuremul'
 end
 
-function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; get_solver = get_ECOSSolver, checkpoint = data -> Nothing, resume = init -> init)
+function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η = 0.0, get_solver = get_ECOSSolver, checkpoint = data -> Nothing, resume = init -> init)
+  if η != 0.0
+    @warn "PartitionedLS (Opt): fit called with NNLS option and η != 0. Assuming η==0"
+  end
+
   @debug "Opt algorithm fitting  using non negative least square algorithm"
   
   # Rewriting the problem in homogenous coordinates
@@ -175,8 +179,12 @@ function checkalpha(a, P)
 end
 
 
-function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; N=20, get_solver = get_ECOSSolver,
+function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η = 0.0, N=20, get_solver = get_ECOSSolver,
   checkpoint = (data) -> Nothing, resume = (init) -> init)
+
+  if η != 0.0
+    @warn "PartitionedLS (Alt): fit called with NNLS option and η != 0. Assuming η==0"
+  end
 
   # Rewriting the problem in homogenous coordinates
   Xo = hcat(X, ones(size(X,1),1))
