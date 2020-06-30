@@ -1,3 +1,8 @@
+---
+layout: default
+title: Home
+---
+
 # Partitioned Least Squares
 
 Linear least squares is one of the most widely used regression methods in all the sciences. The simplicity of the model allows this method to be used when data is scarce and it is usually appealing to practitioners that need to gather some insight into the problem by in- specting the values of the learnt parameters. This library implements a variant of the linear least squares model that allows practitioners to partition the input features into groups of variables that they require to contribute similarly to the final result. The library provides two alternative methods to attack the problem: one non-exact method (implemented by PartitionedLS.fit_alternating) based on an alternating least square approach; and one (implemented by PartitionedLS.fit) exact method based on a reformulation of the problem using an exponential number of sub-problems whose minimum is guaranteed to be the optimal solution. In most practical cases the PartitionedLS.fit is both faster and more accurate.
