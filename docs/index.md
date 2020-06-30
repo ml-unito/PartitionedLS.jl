@@ -3,7 +3,7 @@ layout: default
 title: Home
 ---
 
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script> -->
 
 
 # Partitioned Least Squares
@@ -31,7 +31,7 @@ where:
 - $$\mathbf{\beta}$$ is a vector weighting the importance of each set of attributes in the partition;
 - $$\mathbf{\alpha}$$ is a vector weighting the importance of each attribute within one of the sets in the partition. Note that the constraints imply that for each set in the partition the weights of the corresponding $$\alpha$$ variables are all positive and sum to $$1$$.
 
-The PartitionedLS problem is non-convex and NP-complete. The library provides two algorithms to solve the problem anyway: an iterative approach based on the Alternating Least Squares approach and an optimal one that guarantees to return the optimal solution, albeit of an exponential complexity in the cardinality of the partition (i.e., it is mainly useful when $K$ is small).
+The PartitionedLS problem is non-convex and NP-complete. The library provides two algorithms to solve the problem anyway: an iterative approach based on the Alternating Least Squares approach and an optimal one that guarantees to return the optimal solution, albeit of an exponential complexity in the cardinality of the partition (i.e., it is mainly useful when $$K$$ is small).
 
 More details can be found in the paper [Partitioned Least Squares](https://arxiv.org/abs/2006.16202).
 
