@@ -352,7 +352,7 @@ function sum_max_0_αi_αj(P::Array{Float64,2}, α::Array{Float64,1})
   return result
 end
 
-function lower_bound(Q::Array{Float64,2}, q::Array{Float64,1}, q0, P::Array{Int,2}, Σ::Array{Int}; get_solver = get_ECOSSolver) {
+function lower_bound(Q::Array{Float64,2}, q::Array{Float64,1}, q0, P::Array{Int,2}, Σ::Array{Int}; get_solver = get_ECOSSolver)
   M = size(Q)[1]
   α = Variable(M)
   constraints = []
@@ -370,7 +370,7 @@ function lower_bound(Q::Array{Float64,2}, q::Array{Float64,1}, q0, P::Array{Int,
   Convex.solve!(p, get_solver())
 
   return p.optval, α.value
-}
+end
 
 
 function fit_BnB(Q::Array{Float64,2}, q::Array{Float64,1}, q0, P::Array{Int,2}, μ::Float64; get_solver = get_ECOSSolver)
