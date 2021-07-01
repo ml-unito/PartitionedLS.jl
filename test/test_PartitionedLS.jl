@@ -32,7 +32,7 @@ opt, a, b, t, P = result_opt_nnls
 result_alt = fit(Alt, X, y, P, η = 0.0)
 
 @info "Calling Alt nnls"
-result_alt_nnls = fit(AltNNLS, X, y, P)
+result_alt_nnls = fit(AltNNLS, X, y, P, 10)
 opt, a, b, t, P = result_alt_nnls
 
 @info "Opt" norm(predict(result_opt, X) - y, 2)

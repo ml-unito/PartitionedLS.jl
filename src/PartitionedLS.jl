@@ -278,7 +278,7 @@ A tuple of the form: `(opt, a, b, t, P)`
 The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + t\$.
 
 """
-function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; 
+function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, N::Int; 
   η=1.0, get_solver = get_ECOSSolver,  checkpoint = (data) -> Nothing, resume = (init) -> init, fake_run = false)
 
   if fake_run
