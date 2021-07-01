@@ -8,10 +8,11 @@ using LinearAlgebra
 using ECOS
 using NonNegLeastSquares
 
-struct Opt end
-struct Alt end
-struct OptNNLS end
-struct AltNNLS end
+struct Opt end         # Optimal algorithm
+struct Alt end         # Alternate Optimization approach
+struct OptNNLS end     # Optimal algorithm using Non Negative Least Squares
+struct AltNNLS end     # Alternate Optimization using Non Negative Least Squares
+struct BnB end         # Brench and Bound approach
 
 """
 indextobeta(b::Integer, K::Integer)::Array{Int64,1}
@@ -249,7 +250,7 @@ end
 
 
 """
-fit_alternating(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; beta=randomvalues)
+fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; beta=randomvalues)
 
 Fits a PartitionedLS model by alternating the optimization of the α and β variables.
 
@@ -278,7 +279,7 @@ The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + 
 
 """
 function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; 
-  η=1.0, N=20, get_solver = get_ECOSSolver,  checkpoint = (data) -> Nothing, resume = (init) -> init, fake_run = false)
+  η=1.0, get_solver = get_ECOSSolver,  checkpoint = (data) -> Nothing, resume = (init) -> init, fake_run = false)
 
   if fake_run
     return ()
@@ -319,10 +320,89 @@ function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
   (p.optval, α.value, β.value, t.value, P)
 end
 
+function fit( ::Type{BnB}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η=1.0, get_solver = get_ECOSSolver,  checkpoint = (data) -> Nothing, resume = (init) -> init, fake_run = false) 
+  Xo = hcat(X, ones(size(X,1),1))
+  Po = vcat( hcat(P, zeros(size(P,1))), vec1(size(P,2)+1))
+  
+  Q = Xo'Xo
+  q = -2Xo'y
+  q0 = y'y
+
+  opt,α = fit_BnB(Q, q, q0, Po, Inf, get_solver = get_solver)
+  β = sum(Po .* α, dims=1)
+  α = sum(Po .* α ./ β, dims=2)
+
+  return opt, α[1:end-1], β[1:end-1], β[end], P
+end
+
+function sum_max_0_αi_αj(P::Array{Float64,2}, α::Array{Float64,1})
+  K = size(P)[2]   # number of partitions
+  result = zeros(K)
+
+  # forall k, sets result[k] = sum(max(0, -αi*αj)) forall i,j in partition k
+  for k in 1:K
+    is = findall(!=(0), P[:,k])   # list of indices of partition k
+    for i in size(is)
+      for j in (i+1):size(is)
+        result[k] += max(0, -α[is[i]]α[is[j]])
+      end
+    end
+  end
+
+  return result
+end
+
+function lower_bound(Q::Array{Float64,2}, q::Array{Float64,1}, q0, P::Array{Int,2}, Σ::Array{Int}; get_solver = get_ECOSSolver) {
+  M = size(Q)[1]
+  α = Variable(M)
+  constraints = []
+  for σ in Σ
+    if σ > 0
+      push!(constraints, α[σ] >= 0)
+    else 
+      push!(constraints, α[σ] <= 0)
+    end
+  end
+
+  loss = α' * Q * α + q' * α + q0
+  p = minimize(loss, constraints)
+
+  Convex.solve!(p, get_solver())
+
+  return p.optval, α.value
+}
+
+
+function fit_BnB(Q::Array{Float64,2}, q::Array{Float64,1}, q0, P::Array{Int,2}, μ::Float64; get_solver = get_ECOSSolver)
+
+  lb,α = lower_bound(Q,q,q_0,Σ, get_solver)
+
+  if lb >= μ
+    # no solution can be found in this branch
+    return Inf64, []
+  end
+
+  ν = sum_max_0_αi_αj(P, α)
+  if ν == zeros(len(ν))
+    # optimal solution found
+    return ν, α
+  end
+
+  k = argmax(ν)
+  pk = findall(==(1), P[:,k])
+  Σp = [Σ; pk]     # positive index i stands for αi >= 0
+  Σm = [Σ; -pk]    # negative index i stands for αi <= 0
+
+  μp,αp = fit_BnB(Q, q, q0, P, μ, Σp, get_solver = get_solver)
+  μm,αm = fit_Bnb(Q, q, q0, P, min(μ, μp), Σm, get_solver = get_solver)
+
+  i = argmin(μ, μp, μm)
+  return [μ,μp,μm][i], [α, αp, αm][i]
+end
 
 # This function implements the same algorithm as fit_alternating, but it works around a bug 
 # in the CVX library that prevented fix! and free! to work as intended. The current version
-# of the library fixes the bug, so this function should not be called (just use fix_iterative).
+# of the library fixes the bug, so this function should not be called (just use fix(::Alt)).
 
 function fit_alternating_slow(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; verbose=0, η=1.0, N=20)
   M,K = size(P)
