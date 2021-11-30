@@ -4,9 +4,9 @@ function fit(::Type{BnB}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
     Xo = hcat(X, ones(size(X, 1), 1))
     Po::Array{Int,2} = vcat(hcat(P, zeros(size(P, 1))), vec1(size(P, 2) + 1))
 
-    Q = Xo'Xo
-    q = -2Xo'y
-    q0 = y'y
+    Q = Xo' * Xo
+    q = -2 * Xo' * y
+    q0 = y' * y
     Σ::Array{Int,1} = []
 
     opt, α = fit_BnB(Q, q, q0, Po, Inf, Σ, get_solver = get_solver)
@@ -23,7 +23,7 @@ function sum_max_0_αi_αj(P::Array{Float64,2}, α::Array{Float64,1})
     # forall k, sets result[k] = sum(max(0, -αi*αj)) forall i,j in partition k
     for k = 1:K
         is = findall(!=(0), P[:, k])   # list of indices of partition k
-        for i in size(is)
+        for i in 1:size(is)
             for j = (i+1):size(is)
                 result[k] += max(0, -α[is[i]]α[is[j]])
             end
@@ -77,6 +77,6 @@ function fit_BnB(Q::Array{Float64,2}, q::Array{Float64,1}, q0, P::Array{Int,2}, 
     μp, αp = fit_BnB(Q, q, q0, P, μ, Σp, get_solver = get_solver)
     μm, αm = fit_Bnb(Q, q, q0, P, min(μ, μp), Σm, get_solver = get_solver)
 
-    i = argmin(μ, μp, μm)
+    i = argmin([μ, μp, μm])
     return [μ, μp, μm][i], [α, αp, αm][i]
 end

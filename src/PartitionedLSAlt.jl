@@ -35,6 +35,7 @@ partition \$k\$.
 * `η`: regularization factor, higher values implies more regularized solutions
 * `N`: number of alternating loops to be performed, defaults to 20.
 * `get_solver`: a function returning the solver to be used. Defaults to () -> ECOSSolver()
+* `resume` and `checkpoint` allows for restarting an optimization from a given checkpoint. 
 
 # Result
 
@@ -142,7 +143,7 @@ function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
         # ls problem with fixed alpha variables
 
         Xoα = Xo * (Po .* α)
-        β = Xoα \ y
+        β = Xoα \ y             # idiomatic Julia way to solve the least squares problem
         optval = loss(α, β)
         @debug "optval (α fixed)  $optval"
 

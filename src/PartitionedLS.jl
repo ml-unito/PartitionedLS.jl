@@ -14,7 +14,7 @@ end
 
 """
 Returns a vector of length n with all components set to zero except
-for the last one (which is set to 1).
+for the last one, which is set to 1.
 
 E.g., vec1(5) -> [0 0 0 0 1]
 """
