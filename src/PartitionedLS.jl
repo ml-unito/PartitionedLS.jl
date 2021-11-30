@@ -44,6 +44,6 @@ end
 
 include("PartitionedLSAlt.jl")
 include("PartitionedLSOpt.jl")
-include("PartitionedLSBnB2.jl")
+include("PartitionedLSBnB.jl")
 
 end
