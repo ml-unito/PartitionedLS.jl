@@ -24,6 +24,13 @@ function vec1(n)
   result
 end
 
+function homogeneousCoords(X, P::Array{Int,2})
+  Xo = hcat(X, ones(size(X, 1), 1))
+  Po::Matrix{Int} = vcat(hcat(P, zeros(size(P, 1))), vec1(size(P, 2) + 1))
+
+  Xo,Po
+end
+
 
 """
 predict(model::Tuple, X::Array{Float64,2})
@@ -37,6 +44,6 @@ end
 
 include("PartitionedLSAlt.jl")
 include("PartitionedLSOpt.jl")
-include("PartitionedLSBnB.jl")
+include("PartitionedLSBnB2.jl")
 
 end

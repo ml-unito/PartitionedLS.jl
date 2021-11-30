@@ -106,9 +106,7 @@ function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
         @warn "PartitionedLS (Alt): fit called with NNLS option and η != 0. Assuming η==0"
     end
 
-    # Rewriting the problem in homogenous coordinates
-    Xo = hcat(X, ones(size(X, 1), 1))
-    Po = vcat(hcat(P, zeros(size(P, 1))), vec1(size(P, 2) + 1))
+    Xo, Po = homogeneousCoords(X, P)
 
     M, K = size(Po)
 

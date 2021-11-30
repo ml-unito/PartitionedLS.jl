@@ -116,9 +116,7 @@ function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
     @debug "Opt algorithm fitting  using non negative least square algorithm"
 
     # Rewriting the problem in homogenous coordinates
-    Xo = hcat(X, ones(size(X, 1), 1))
-    Po = vcat(hcat(P, zeros(size(P, 1))), vec1(size(P, 2) + 1))
-
+    Xo, Po = homogeneousCoords(X, P)
     M, K = size(Po)
 
     b_start, results = resume((-1, []))
