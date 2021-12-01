@@ -101,3 +101,7 @@ result_alt_nnls = fit(AltNNLS, X, y, P)
 # with results returned by anyone of the solvers.
 predict(result_opt, X)
 ```
+
+## Performances
+
+<iframe src="BnB.html"></iframe>
