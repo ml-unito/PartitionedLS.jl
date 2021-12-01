@@ -102,6 +102,11 @@ result_alt_nnls = fit(AltNNLS, X, y, P)
 predict(result_opt, X)
 ```
 
-## Performances
+## Performance comparisons
 
-<iframe src="BnB.html"></iframe>
+### Branch and Bound algorithm 
+
+The following graphs show the performances of the BnB algorithm in several experimental conditions. The datasets are generated synthetically by varying a number of parameters: $N$ (the number of examples), $K$ (the number of sets in the partition). In all these experiments the number of features has been kept fixed (=100).
+
+<iframe src="BnB_nP.html" width="100%" height="300px"></iframe>
+<iframe src="BnB_N.html" width="100%" height="300px"></iframe>
