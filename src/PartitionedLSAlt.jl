@@ -33,7 +33,7 @@ Fits a PartitionedLS model by alternating the optimization of the α and β vari
 \$K\$ subsets. \$P_{m,k}\$ should be 1 if attribute number \$m\$ belongs to
 partition \$k\$.
 * `η`: regularization factor, higher values implies more regularized solutions
-* `N`: number of alternating loops to be performed, defaults to 20.
+* `T`: number of alternating loops to be performed, defaults to 20.
 * `get_solver`: a function returning the solver to be used. Defaults to () -> ECOSSolver()
 * `resume` and `checkpoint` allows for restarting an optimization from a given checkpoint. 
 
@@ -50,8 +50,9 @@ A tuple of the form: `(opt, a, b, t, P)`
 The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + t\$.
 
 """
-function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, N::Int; 
-             η = 1.0, get_solver = get_ECOSSolver)
+function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; 
+        T=1000, η = 1.0, ϵ = 1e-6,
+        get_solver = get_ECOSSolver)
     M, K = size(P)
 
     α = Variable(M, Positive())
@@ -69,7 +70,11 @@ function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
 
     i_start, α.value, β.value, t.value, _ = initvals
 
-    for i = (i_start+1):N
+    oldoptval = 1e20
+    optval = 1e10
+    i = 1
+
+    while i <= T && abs(oldoptval - optval) > ϵ * oldoptval
         fix!(β)
         Convex.solve!(p, get_solver())
         free!(β)
@@ -81,7 +86,13 @@ function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
         free!(α)
 
         @debug "optval (α fixed)" p.optval α.value β.value
+        
+        oldoptval = optval
+        optval = p.optval
+        i += 1
     end
+
+    @debug "Exiting with optimality gap: $(abs(oldoptval - optval))"
 
     (p.optval, α.value, β.value, t.value, P)
 end
@@ -90,8 +101,8 @@ end
 # AltNNLS
 #
 
-function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; 
-        η = 0.0, N = 20, get_solver = get_ECOSSolver)
+function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
+    η = 0.0, ϵ = 1e-6, T = 1000, get_solver = get_ECOSSolver)
     if η != 0.0
         @warn "PartitionedLS (Alt): fit called with NNLS option and η != 0. Assuming η==0"
     end
@@ -108,7 +119,11 @@ function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
 
     i_start, α, β, t, optval = initvals
 
-    for i = (i_start+1):N
+    oldoptval = 1e20
+    optval = 1e10
+    i = 1
+
+    while i <= T && abs(oldoptval - optval) > ϵ * oldoptval
         # nnls problem with fixed beta variables
 
         Poβ = sum(Po .* β', dims = 2)
@@ -132,12 +147,17 @@ function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
 
         Xoα = Xo * (Po .* α)
         β = Xoα \ y             # idiomatic Julia way to solve the least squares problem
+
+        oldoptval = optval
         optval = loss(α, β)
         @debug "optval (α fixed)  $optval"
+
+        i += 1
     end
 
     result = (optval, α[1:end-1], β[1:end-1], β[end] * α[end], P)
-    @debug result
+
+    @debug "Exiting with optimality gap: $(abs(oldoptval - optval))"
 
     result
 end
