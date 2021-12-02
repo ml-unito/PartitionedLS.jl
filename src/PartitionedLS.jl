@@ -32,6 +32,11 @@ function homogeneousCoords(X, P::Array{Int,2})
 end
 
 
+function predict(α, β, t, P, X::Array{Float64,2})
+  X * (P .* α) * β .+ t
+end
+
+
 """
 predict(model::Tuple, X::Array{Float64,2})
 
@@ -39,8 +44,9 @@ returns the predictions of the given model on examples in X
 """
 function predict(model, X::Array{Float64,2})
   (_, α, β, t, P) = model
-  X * (P .* α) * β .+ t
+  predict(α, β, t, P, X)
 end
+
 
 include("PartitionedLSAlt.jl")
 include("PartitionedLSOpt.jl")

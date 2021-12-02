@@ -29,6 +29,16 @@ function bmatrix(X, P, β)
     X .* featuremul'
 end
 
+function cleanupResult(::Type{Opt}, result, P)
+    opt, a, b, t, _ = result
+    A = sum(P .* a, dims = 1)
+    a = sum((P .* a) ./ A, dims = 2)
+    b = b .* A'
+
+     return opt, a, b, t
+end
+
+
 """
 fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; beta=randomvalues)
 
@@ -58,7 +68,9 @@ A tuple of the form: `(opt, a, b, t, P)`
 The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + t\$.
 
 """
-function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η = 1.0, get_solver = get_ECOSSolver, checkpoint = data -> Nothing, resume = init -> init, fake_run = false)
+function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; 
+                η = 1.0, get_solver = get_ECOSSolver, checkpoint = data -> Nothing, resume = init -> init, fake_run = false,
+                returnAllSolutions=false)
     if fake_run
         return ()
     end
@@ -81,21 +93,20 @@ function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
         p = minimize(loss)
         Convex.solve!(p, get_solver())
 
-        @debug "iteration $b optval:" p.optval
+        @info "iteration $b optval:" p.optval
         push!(results, (p.optval, α.value, β, t.value, P))
 
         checkpoint((b, results))
     end
 
     optindex = argmin((z -> z[1]).(results))
-    opt, a, b, t, _ = results[optindex]
+    opt, a, b, t = cleanupResult(Opt, results[optindex], P)
 
-
-    A = sum(P .* a, dims = 1)
-    a = sum((P .* a) ./ A, dims = 2)
-    b = b .* A'
-
-    (opt, a, b, t, P)
+    if returnAllSolutions
+        (opt, a, b, t, P), map((r)->cleanupResult(Opt, r, P), results)
+    else
+        (opt, a, b, t, P)
+    end
 end
 
 
@@ -104,11 +115,20 @@ end
 #
 
 
-function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η = 0.0, get_solver = get_ECOSSolver, checkpoint = data -> Nothing, resume = init -> init, fake_run = false)
-    if fake_run
-        return ()
-    end
+function cleanupResult(::Type{OptNNLS}, result, P)
+    opt, a, b, t, _ = result
 
+    A = sum(P .* a, dims = 1)
+    b = b .* A'
+
+    A[A.==0.0] .= 1.0 # substituting all 0.0 with 1.0
+    a = sum((P .* a) ./ A, dims = 2)
+
+    opt, a, b, t
+end
+
+function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; 
+            η = 0.0, returnAllSolutions = false)
     if η != 0.0
         @warn "PartitionedLS (Opt): fit called with NNLS option and η != 0. Assuming η==0"
     end
@@ -119,7 +139,7 @@ function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
     Xo, Po = homogeneousCoords(X, P)
     M, K = size(Po)
 
-    b_start, results = resume((-1, []))
+    b_start, results = -1, []
 
     for b = (b_start+1):(2^K-1)
         @debug "Starting iteration $b/$(2^K-1)"
@@ -127,23 +147,20 @@ function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
         Xb = bmatrix(Xo, Po, β)
         α = nonneg_lsq(Xb, y, alg = :nnls)
         optval = norm(Xo * (Po .* α) * β - y)
-
+        @info "optval:" optval
 
 
         result = (optval, α[1:(end-1)], β[1:(end-1)], β[end] * α[end], P)
         push!(results, result)
-
-        checkpoint((b, results))
     end
 
     optindex = argmin((z -> z[1]).(results))
-    opt, a, b, t, _ = results[optindex]
+    opt, a,b,t = cleanupResult(OptNNLS, results[optindex], P)
 
-    A = sum(P .* a, dims = 1)
-    b = b .* A'
-
-    A[A.==0.0] .= 1.0 # substituting all 0.0 with 1.0
-    a = sum((P .* a) ./ A, dims = 2)
-
-    (opt, a, b, t, P)
+    if returnAllSolutions
+        (opt, a, b, t, P), map((r) -> cleanupResult(OptNNLS, r, P), results)
+    else
+        (opt, a, b, t, P)
+    end
 end
+

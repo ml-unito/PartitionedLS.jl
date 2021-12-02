@@ -12,7 +12,7 @@ function fit(::Type{BnB}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
 end
 
 function sum_max_0_αi_αj(P::Array{Int,2}, α::Array{Float64,1})
-    K = size(P)[2]   # number of partitions
+    K = size(P,2)   # number of partitions
     result = zeros(K)
 
     # forall k, sets result[k] = sum(max(0, -αi*αj)) forall i,j in partition k
@@ -28,53 +28,38 @@ function sum_max_0_αi_αj(P::Array{Int,2}, α::Array{Float64,1})
     return result
 end
 
-"""
-Returns the matrix obtained multiplying each element in X to the associated
-weight in β. 
-"""
-function bmatrix(X, P, β)
-    Pβ = P .* β'
-    featuremul = sum(Pβ, dims = 2)
-    X .* featuremul'
-end
+
 
 function lower_bound(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, Σ::Array{Int,1}, get_solver::typeof(get_ECOSSolver))
-    # M = size(Q)[1]
-    # α = Variable(M)
-    # constraints::Array{Convex.Constraint} = []
-    # for σ in Σ
-    #     if σ > 0
-    #         push!(constraints, α[σ] >= 0)
-    #     else
-    #         push!(constraints, α[σ] <= 0)
-    #     end
-    # end
+    posConstr = Σ[findall(>(0), Σ)]
+    negConstr = -Σ[findall(<(0), Σ)]
 
-    # loss = α' * Q * α + q' * α + q0
-    # p = minimize(loss, constraints)
-
-    # Convex.solve!(p, get_solver())
-
-    posConstr = findall(>(0), Σ)
-    negConstr = findall(<(0), Σ)
-
-    M = size(X,2)
-    Xp = X
-    Xm = -X
-    Xp[negConstr] .= 0
-    Xm[posConstr] .= 0
+    M = size(X, 2)
+    Xp = copy(X)
+    Xm = -copy(X)
+    Xp[:, negConstr] .= 0
+    Xm[:, posConstr] .= 0
 
     XX = [Xp Xm]
 
-    αα = nonneg_lsq(XX, y, alg = :nnls)
-    α = αα[1:M] - αα[M+1:end]
+    @debug "Launching nonneg_lsq"
+    αα = nonneg_lsq(XX, y, alg=:fnnls)
+    @debug "nonneg_lsq terminated"
+    αp = αα[1:M]
+    αn = αα[M+1:end]
+    αp[negConstr] .= 0
+    αn[posConstr] .= 0
 
-    return norm(X * α - y), α
+    α = αp - αn
+
+    return norm(XX * αα - y), α
 end
 
-function fit_BnB(X::Array{Float64,2}, y::Array{Float64,1}, P::Matrix{Int}, μ::Float64, Σ::Array{Int,1}; get_solver = get_ECOSSolver)
+function fit_BnB(X::Array{Float64,2}, y::Array{Float64,1}, P::Matrix{Int}, μ::Float64, Σ::Array{Int,1}; get_solver = get_ECOSSolver, depth = 0)
+    @debug "BnB new node"
 
     lb, α = lower_bound(X, y, P, Σ, get_solver)
+    @debug "Lower bound: $lb"
 
     if lb >= μ
         # no solution can be found in this branch
@@ -82,19 +67,28 @@ function fit_BnB(X::Array{Float64,2}, y::Array{Float64,1}, P::Matrix{Int}, μ::F
     end
 
     ν = sum_max_0_αi_αj(P, α)
+
     if all(==(0), ν)
         # optimal solution found
-        return norm(X * α - y), α
+        p★ = norm(X * α - y), α
+        
+        @debug "Optimal solution for this node $p★"
+        return p★
     end
 
     k = argmax(ν)
     pk = findall(==(1), P[:, k])
+
     Σp = [Σ; pk]     # positive index i stands for αi >= 0
     Σm = [Σ; -pk]    # negative index i stands for αi <= 0
 
-    μp, αp = fit_BnB(X, y, P, μ, Σp, get_solver = get_solver)
-    μm, αm = fit_Bnb(X, y, P, min(μ, μp), Σm, get_solver = get_solver)
+    μp, αp = fit_BnB(X, y, P, μ, Σp, get_solver = get_solver, depth = depth + 1)
+    μm, αm = fit_BnB(X, y, P, min(μ, μp), Σm, get_solver = get_solver, depth = depth + 1)
 
     i = argmin([μ, μp, μm])
-    return [μ, μp, μm][i], [α, αp, αm][i]
+
+    res = [μ, μp, μm][i], [α, αp, αm][i]
+
+    @debug "Best upperbound for this node: $(res[1])"
+    return res
 end

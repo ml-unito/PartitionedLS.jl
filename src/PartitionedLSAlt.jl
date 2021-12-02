@@ -50,13 +50,8 @@ A tuple of the form: `(opt, a, b, t, P)`
 The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + t\$.
 
 """
-function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, N::Int;
-    η = 1.0, get_solver = get_ECOSSolver, checkpoint = (data) -> Nothing, resume = (init) -> init, fake_run = false)
-
-    if fake_run
-        return ()
-    end
-
+function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, N::Int; 
+             η = 1.0, get_solver = get_ECOSSolver)
     M, K = size(P)
 
     α = Variable(M, Positive())
@@ -72,7 +67,7 @@ function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
     t.value = rand(Float32, 1)
     initvals = (0, α.value, β.value, t.value, p.optval)
 
-    i_start, α.value, β.value, t.value, _ = resume(initvals)
+    i_start, α.value, β.value, t.value, _ = initvals
 
     for i = (i_start+1):N
         fix!(β)
@@ -86,7 +81,6 @@ function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
         free!(α)
 
         @debug "optval (α fixed)" p.optval α.value β.value
-        checkpoint((i, α.value, β.value, t.value, p.optval))
     end
 
     (p.optval, α.value, β.value, t.value, P)
@@ -96,12 +90,8 @@ end
 # AltNNLS
 #
 
-function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η = 0.0, N = 20, get_solver = get_ECOSSolver,
-    checkpoint = (data) -> Nothing, resume = (init) -> init, fake_run = false)
-    if fake_run
-        return ()
-    end
-
+function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; 
+        η = 0.0, N = 20, get_solver = get_ECOSSolver)
     if η != 0.0
         @warn "PartitionedLS (Alt): fit called with NNLS option and η != 0. Assuming η==0"
     end
@@ -116,7 +106,7 @@ function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
     initvals = (0, α, β, t, Inf64)
     loss = (a, b) -> norm(Xo * (Po .* a) * b - y, 2)
 
-    i_start, α, β, t, optval = resume(initvals)
+    i_start, α, β, t, optval = initvals
 
     for i = (i_start+1):N
         # nnls problem with fixed beta variables
@@ -144,8 +134,6 @@ function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
         β = Xoα \ y             # idiomatic Julia way to solve the least squares problem
         optval = loss(α, β)
         @debug "optval (α fixed)  $optval"
-
-        checkpoint((i, α[1:end-1], β[1:end-1], β[end] * α[end], optval))
     end
 
     result = (optval, α[1:end-1], β[1:end-1], β[end] * α[end], P)
