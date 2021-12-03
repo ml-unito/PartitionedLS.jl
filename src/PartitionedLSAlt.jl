@@ -102,7 +102,7 @@ end
 #
 
 function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
-    η = 0.0, ϵ = 1e-6, T = 1000, get_solver = get_ECOSSolver)
+    η = 0.0, ϵ = 1e-6, T = 1000, get_solver = get_ECOSSolver, nnlsalg = :pivot)
     if η != 0.0
         @warn "PartitionedLS (Alt): fit called with NNLS option and η != 0. Assuming η==0"
     end
@@ -128,7 +128,7 @@ function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
 
         Poβ = sum(Po .* β', dims = 2)
         Xoβ = Xo .* Poβ'
-        α = nonneg_lsq(Xoβ, y, alg = :nnls)
+        α = nonneg_lsq(Xoβ, y, alg = nnlsalg)
         α = checkalpha(α, Po)
 
         sumα = sum(Po .* α, dims = 1)

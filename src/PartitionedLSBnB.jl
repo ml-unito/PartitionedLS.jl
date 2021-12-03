@@ -30,7 +30,7 @@ end
 
 
 
-function lower_bound(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, Σ::Array{Int,1}, get_solver::typeof(get_ECOSSolver))
+function lower_bound(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, Σ::Array{Int,1}, get_solver::typeof(get_ECOSSolver), nnlsalg)
     posConstr = Σ[findall(>(0), Σ)]
     negConstr = -Σ[findall(<(0), Σ)]
 
@@ -43,7 +43,7 @@ function lower_bound(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, 
     XX = [Xp Xm]
 
     @debug "Launching nonneg_lsq"
-    αα = nonneg_lsq(XX, y, alg=:fnnls)
+    αα = nonneg_lsq(XX, y, alg=nnlsalg)
     @debug "nonneg_lsq terminated"
     αp = αα[1:M]
     αn = αα[M+1:end]
@@ -55,10 +55,13 @@ function lower_bound(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, 
     return norm(XX * αα - y), α
 end
 
-function fit_BnB(X::Array{Float64,2}, y::Array{Float64,1}, P::Matrix{Int}, μ::Float64, Σ::Array{Int,1}; get_solver = get_ECOSSolver, depth = 0)
+function fit_BnB(X::Array{Float64,2}, y::Array{Float64,1}, P::Matrix{Int}, μ::Float64, Σ::Array{Int,1}; 
+                 get_solver = get_ECOSSolver, 
+                 depth = 0,
+                 nnlsalg = :pivot)
     @debug "BnB new node"
 
-    lb, α = lower_bound(X, y, P, Σ, get_solver)
+    lb, α = lower_bound(X, y, P, Σ, get_solver, nnlsalg)
     @debug "Lower bound: $lb"
 
     if lb >= μ

@@ -127,7 +127,7 @@ function cleanupResult(::Type{OptNNLS}, result, P)
 end
 
 function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; 
-            η = 0.0, returnAllSolutions = false)
+            η = 0.0, nnlsalg=:pivot, returnAllSolutions = false)
     if η != 0.0
         @warn "PartitionedLS (Opt): fit called with NNLS option and η != 0. Assuming η==0"
     end
@@ -144,7 +144,7 @@ function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
         @debug "Starting iteration $b/$(2^K-1)"
         β = indextobeta(b, K)
         Xb = bmatrix(Xo, Po, β)
-        α = nonneg_lsq(Xb, y, alg = :fnnls)
+        α = nonneg_lsq(Xb, y, alg = nnlsalg)
         optval = norm(Xo * (Po .* α) * β - y)
 
         result = (optval, α[1:(end-1)], β[1:(end-1)], β[end] * α[end], P)
