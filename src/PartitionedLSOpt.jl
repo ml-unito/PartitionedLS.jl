@@ -13,7 +13,7 @@ function indextobeta(b::Integer, K::Integer)
     result::Array{Int64,1} = []
     for k = 1:K
         push!(result, 2(b % 2) - 1)
-        b >>= 1
+        b >>= 1 
     end
 
     result
@@ -93,7 +93,6 @@ function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
         p = minimize(loss)
         Convex.solve!(p, get_solver())
 
-        @info "iteration $b optval:" p.optval
         push!(results, (p.optval, α.value, β, t.value, P))
 
         checkpoint((b, results))
@@ -145,10 +144,8 @@ function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
         @debug "Starting iteration $b/$(2^K-1)"
         β = indextobeta(b, K)
         Xb = bmatrix(Xo, Po, β)
-        α = nonneg_lsq(Xb, y, alg = :nnls)
+        α = nonneg_lsq(Xb, y, alg = :fnnls)
         optval = norm(Xo * (Po .* α) * β - y)
-        @info "optval:" optval
-
 
         result = (optval, α[1:(end-1)], β[1:(end-1)], β[end] * α[end], P)
         push!(results, result)
