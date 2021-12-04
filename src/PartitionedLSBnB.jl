@@ -1,14 +1,15 @@
 struct BnB end         # Branch and Bound approach
 
-function fit(::Type{BnB}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η = 1.0, get_solver = get_ECOSSolver, checkpoint = (data) -> Nothing, resume = (init) -> init, fake_run = false)
+function fit(::Type{BnB}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; 
+    η = 1.0, get_solver = get_ECOSSolver, nnlsalg=:pivot)
     Xo, Po = homogeneousCoords(X, P)
     Σ::Array{Int,1} = []
 
-    opt, α = fit_BnB(Xo, y, Po, Inf, Σ, get_solver = get_solver)
+    opt, α, nopen = fit_BnB(Xo, y, Po, Inf, Σ, get_solver = get_solver, nnlsalg=nnlsalg)
     β = sum(Po .* α, dims = 1)
     α = sum(Po .* α ./ β, dims = 2)
 
-    return opt, α[1:end-1], β[1:end-1], β[end], P
+    return opt, α[1:end-1], β[1:end-1], β[end], P, nopen
 end
 
 function sum_max_0_αi_αj(P::Array{Int,2}, α::Array{Float64,1})
@@ -58,7 +59,7 @@ end
 function fit_BnB(X::Array{Float64,2}, y::Array{Float64,1}, P::Matrix{Int}, μ::Float64, Σ::Array{Int,1}; 
                  get_solver = get_ECOSSolver, 
                  depth = 0,
-                 nnlsalg = :pivot)
+                 nnlsalg = :pivot)::Tuple{Float64, Vector{Float64}, Int}
     @debug "BnB new node"
 
     lb, α = lower_bound(X, y, P, Σ, get_solver, nnlsalg)
@@ -66,17 +67,17 @@ function fit_BnB(X::Array{Float64,2}, y::Array{Float64,1}, P::Matrix{Int}, μ::F
 
     if lb >= μ
         # no solution can be found in this branch
-        return Inf64, []
+        return (Inf64, [], 1)
     end
 
     ν = sum_max_0_αi_αj(P, α)
 
     if all(==(0), ν)
         # optimal solution found
-        p★ = norm(X * α - y), α
+        p★ = norm(X * α - y)
         
         @debug "Optimal solution for this node $p★"
-        return p★
+        return (p★,α,1)
     end
 
     k = argmax(ν)
@@ -85,13 +86,13 @@ function fit_BnB(X::Array{Float64,2}, y::Array{Float64,1}, P::Matrix{Int}, μ::F
     Σp = [Σ; pk]     # positive index i stands for αi >= 0
     Σm = [Σ; -pk]    # negative index i stands for αi <= 0
 
-    μp, αp = fit_BnB(X, y, P, μ, Σp, get_solver = get_solver, depth = depth + 1)
-    μm, αm = fit_BnB(X, y, P, min(μ, μp), Σm, get_solver = get_solver, depth = depth + 1)
+    μp, αp, nopenp = fit_BnB(X, y, P, μ, Σp, get_solver = get_solver, depth = depth + 1)
+    μm, αm, nopenm = fit_BnB(X, y, P, min(μ, μp), Σm, get_solver = get_solver, depth = depth + 1)
 
     i = argmin([μ, μp, μm])
 
-    res = [μ, μp, μm][i], [α, αp, αm][i]
+    res = ([μ, μp, μm][i], [α, αp, αm][i], (nopenp+nopenm+1))
 
-    @debug "Best upperbound for this node: $(res[1])"
+    @debug "Best upperbound for this node: $(res[1]) num open nodes so far: $(res[3])"
     return res
 end
