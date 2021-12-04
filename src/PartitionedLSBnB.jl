@@ -29,7 +29,15 @@ function sum_max_0_αi_αj(P::Array{Int,2}, α::Array{Float64,1})
     return result
 end
 
-
+function saveproblem(XX,y)
+    using CSV
+    using DataFrames
+    df = DataFrame(XX, :auto)
+    df.y = y
+    
+    @warn "Writing temporary csv file -- this is a debug feature, should not be present in production"
+    CSV.write("nnls_problem.csv", df)
+end
 
 function lower_bound(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, Σ::Array{Int,1}, get_solver::typeof(get_ECOSSolver), nnlsalg)
     posConstr = Σ[findall(>(0), Σ)]
@@ -44,6 +52,7 @@ function lower_bound(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, 
     XX = [Xp Xm]
 
     @debug "Launching nonneg_lsq"
+    saveproblem(XX,y)
     αα = nonneg_lsq(XX, y, alg=nnlsalg)
     @debug "nonneg_lsq terminated"
     αp = αα[1:M]
