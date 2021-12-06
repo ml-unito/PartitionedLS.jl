@@ -1,20 +1,20 @@
 struct BnB end         # Branch and Bound approach
 
 """
-fit(::Type{BnB}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, η=1.0, nnlsalg=:pivot)
+# fit(::Type{BnB}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, η=1.0, nnlsalg=:pivot)
 
 Implements the Branch and Bound algorithm to fit a Partitioned Least Squres model.
 
-# Arguments
+## Arguments
 
 * `X`: \$N × M\$ matrix describing the examples
 * `y`: \$N\$ vector with the output values for each example
 * `P`: \$M × K\$ matrix specifying how to partition the \$M\$ attributes into \$K\$ subsets. \$P_{m,k}\$ should be 1 if attribute number \$m\$ belongs to
 partition \$k\$.
 * `η`: regularization factor, higher values implies more regularized solutions
-* nnlsalg: the kind of nnls algorithm to be used during solving
+* nnlsalg: the kind of nnls algorithm to be used during solving. Possible values are :pivot, :nnls, :fnnls
 
-# Result
+## Result
 
 A tuple of the form: `(opt, a, b, t, P, nopen)`
 

@@ -21,11 +21,11 @@ end
 
 
 """
-fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; beta=randomvalues)
+# fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; T = 1000, η = 1.0, ϵ = 1e-6, get_solver = get_ECOSSolver)
 
 Fits a PartitionedLS model by alternating the optimization of the α and β variables.
 
-# Arguments
+## Arguments
 
 * `X`: \$N × M\$ matrix describing the examples
 * `y`: \$N\$ vector with the output values for each example
@@ -34,9 +34,9 @@ partition \$k\$.
 * `η`: regularization factor, higher values implies more regularized solutions
 * `T`: number of alternating loops to be performed, defaults to 20.
 * `get_solver`: a function returning the solver to be used. Defaults to () -> ECOSSolver()
-* `resume` and `checkpoint` allows for restarting an optimization from a given checkpoint. 
+* `ϵ`: minimum relative improvement in the objective function before stopping the optimization. Default is 1e-6
 
-# Result
+## Result
 
 A tuple of the form: `(opt, a, b, t, P)`
 
@@ -47,9 +47,9 @@ A tuple of the form: `(opt, a, b, t, P)`
 * `P`: the partition matrix (copied from the input)
 
 """
-function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; 
-        T=1000, η = 1.0, ϵ = 1e-6,
-        get_solver = get_ECOSSolver)
+function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
+    T = 1000, η = 1.0, ϵ = 1e-6,
+    get_solver = get_ECOSSolver)
     M, K = size(P)
 
     α = Variable(M, Positive())
@@ -83,7 +83,7 @@ function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
         free!(α)
 
         @debug "optval (α fixed)" p.optval α.value β.value
-        
+
         oldoptval = optval
         optval = p.optval
         i += 1
@@ -94,12 +94,37 @@ function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
     (p.optval, α.value, β.value, t.value, P)
 end
 
-#
-# AltNNLS
-#
+"""
+# fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η = 0.0, ϵ = 1e-6, T = 1000, nnlsalg = :pivot)
 
+Fits a PartitionedLS model by alternating the optimization of the α and β variables. This version uses 
+an optimization strategy based on non-negative-least-squaes solvers. This formulation is faster and 
+more numerically stable with respect to `fit(Alt, ...)``.
+
+## Arguments
+
+* `X`: \$N × M\$ matrix describing the examples
+* `y`: \$N\$ vector with the output values for each example
+* `P`: \$M × K\$ matrix specifying how to partition the \$M\$ attributes into \$K\$ subsets. \$P_{m,k}\$ should be 1 if attribute number \$m\$ belongs to
+partition \$k\$.
+* `η`: regularization factor, higher values implies more regularized solutions
+* `T`: number of alternating loops to be performed, defaults to 1000.
+* `ϵ`: minimum relative improvement in the objective function before stopping the optimization. Default is 1e-6
+* `nnlsalg`: specific flavour of nnls algorithm to be used, possible values are `:pivot`, `:nnls`, `:fnnls`
+
+## Result
+
+A tuple of the form: `(opt, a, b, t, P)`
+
+* `opt`: optimal value of the objective function (loss + regularization)
+* `a`: values of the α variables at the optimal point
+* `b`: values of the β variables at the optimal point
+* `t`: the intercept at the optimal point
+* `P`: the partition matrix (copied from the input)
+
+"""
 function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
-    η = 0.0, ϵ = 1e-6, T = 1000, get_solver = get_ECOSSolver, nnlsalg = :pivot)
+    η = 0.0, ϵ = 1e-6, T = 1000, nnlsalg = :pivot)
     if η != 0.0
         @warn "PartitionedLS (Alt): fit called with NNLS option and η != 0. Assuming η==0"
     end
