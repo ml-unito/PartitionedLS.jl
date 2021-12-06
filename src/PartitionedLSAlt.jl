@@ -29,8 +29,7 @@ Fits a PartitionedLS model by alternating the optimization of the α and β vari
 
 * `X`: \$N × M\$ matrix describing the examples
 * `y`: \$N\$ vector with the output values for each example
-* `P`: \$M × K\$ matrix specifying how to partition the \$M\$ attributes into
-\$K\$ subsets. \$P_{m,k}\$ should be 1 if attribute number \$m\$ belongs to
+* `P`: \$M × K\$ matrix specifying how to partition the \$M\$ attributes into \$K\$ subsets. \$P_{m,k}\$ should be 1 if attribute number \$m\$ belongs to
 partition \$k\$.
 * `η`: regularization factor, higher values implies more regularized solutions
 * `T`: number of alternating loops to be performed, defaults to 20.
@@ -46,8 +45,6 @@ A tuple of the form: `(opt, a, b, t, P)`
 * `b`: values of the β variables at the optimal point
 * `t`: the intercept at the optimal point
 * `P`: the partition matrix (copied from the input)
-
-The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + t\$.
 
 """
 function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; 

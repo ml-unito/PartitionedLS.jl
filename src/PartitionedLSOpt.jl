@@ -49,8 +49,7 @@ learnt model (see the Result section).
 
 * `X`: \$N × M\$ matrix describing the examples
 * `y`: \$N\$ vector with the output values for each example
-* `P`: \$M × K\$ matrix specifying how to partition the \$M\$ attributes into
-\$K\$ subsets. \$P_{m,k}\$ should be 1 if attribute number \$m\$ belongs to
+* `P`: \$M × K\$ matrix specifying how to partition the \$M\$ attributes into \$K\$ subsets. \$P_{m,k}\$ should be 1 if attribute number \$m\$ belongs to
 partition \$k\$.
 * `η`: regularization factor, higher values implies more regularized solutions
 * `get_solver`: a function returning the solver to be used. Defaults to () -> ECOSSolver()

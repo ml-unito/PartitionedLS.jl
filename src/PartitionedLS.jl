@@ -12,12 +12,11 @@ function get_ECOSSolver()
   ECOS.Optimizer(verbose=0)
 end
 
-"""
-Returns a vector of length n with all components set to zero except
-for the last one, which is set to 1.
 
-E.g., vec1(5) -> [0 0 0 0 1]
-"""
+# # Returns a vector of length n with all components set to zero except
+# for the last one, which is set to 1.
+
+# E.g., vec1(5) -> [0 0 0 0 1]
 function vec1(n)
   result = zeros(1, n)
   result[n] = 1
@@ -40,7 +39,7 @@ end
 """
 predict(model::Tuple, X::Array{Float64,2})
 
-returns the predictions of the given model on examples in X
+returns the predictions of the given model on examples in X. 
 """
 function predict(model, X::Array{Float64,2})
   (_, α, β, t, P) = model
