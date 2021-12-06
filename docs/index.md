@@ -51,6 +51,9 @@ add git@github.com:ml-unito/PartitionedLS.git
 
 ## To use this library
 
+See the [library documentation](jldocs/build/index.html) for details about
+each specific method implemented in the library.
+
 You will need a matrix P describing the partitioning of your variables, e.g.:
 
 ```julia
