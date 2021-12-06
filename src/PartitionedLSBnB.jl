@@ -28,11 +28,11 @@ A tuple of the form: `(opt, a, b, t, P, nopen)`
 The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + t\$.
 """
 function fit(::Type{BnB}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
-    η = 1.0, get_solver = get_ECOSSolver, nnlsalg = :pivot)
+    η = 1.0, nnlsalg = :pivot)
     Xo, Po = homogeneousCoords(X, P)
     Σ::Array{Int,1} = []
 
-    opt, α, nopen = fit_BnB(Xo, y, Po, Inf, Σ, get_solver = get_solver, nnlsalg = nnlsalg)
+    opt, α, nopen = fit_BnB(Xo, y, Po, Inf, Σ, nnlsalg = nnlsalg)
     β = sum(Po .* α, dims = 1)
     α = sum(Po .* α ./ β, dims = 2)
 
@@ -56,17 +56,17 @@ function sum_max_0_αi_αj(P::Array{Int,2}, α::Array{Float64,1})
     return result
 end
 
-using CSV
-using DataFrames
-function saveproblem(XX, y)
-    df = DataFrame(XX, :auto)
-    df.y = y
+# using CSV
+# using DataFrames
+# function saveproblem(XX, y)
+#     df = DataFrame(XX, :auto)
+#     df.y = y
 
-    @warn "Writing temporary csv file -- this is a debug feature, should not be present in production"
-    CSV.write("nnls_problem.csv", df)
-end
+#     @warn "Writing temporary csv file -- this is a debug feature, should not be present in production"
+#     CSV.write("nnls_problem.csv", df)
+# end
 
-function lower_bound(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, Σ::Array{Int,1}, get_solver::typeof(get_ECOSSolver), nnlsalg)
+function lower_bound(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, Σ::Array{Int,1}, nnlsalg)
     posConstr = Σ[findall(>(0), Σ)]
     negConstr = -Σ[findall(<(0), Σ)]
 
@@ -78,8 +78,7 @@ function lower_bound(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, 
 
     XX = [Xp Xm]
 
-    @debug "Launching nonneg_lsq"
-    saveproblem(XX, y)
+    @debug "Launching nonneg_lsq alg=$nnlsalg"
     αα = nonneg_lsq(XX, y, alg = nnlsalg)
     @debug "nonneg_lsq terminated"
     αp = αα[1:M]
@@ -93,12 +92,11 @@ function lower_bound(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, 
 end
 
 function fit_BnB(X::Array{Float64,2}, y::Array{Float64,1}, P::Matrix{Int}, μ::Float64, Σ::Array{Int,1};
-    get_solver = get_ECOSSolver,
     depth = 0,
     nnlsalg = :pivot)::Tuple{Float64,Vector{Float64},Int}
     @debug "BnB new node"
 
-    lb, α = lower_bound(X, y, P, Σ, get_solver, nnlsalg)
+    lb, α = lower_bound(X, y, P, Σ, nnlsalg)
     @debug "Lower bound: $lb"
 
     if lb >= μ
@@ -122,8 +120,8 @@ function fit_BnB(X::Array{Float64,2}, y::Array{Float64,1}, P::Matrix{Int}, μ::F
     Σp = [Σ; pk]     # positive index i stands for αi >= 0
     Σm = [Σ; -pk]    # negative index i stands for αi <= 0
 
-    μp, αp, nopenp = fit_BnB(X, y, P, μ, Σp, get_solver = get_solver, depth = depth + 1)
-    μm, αm, nopenm = fit_BnB(X, y, P, min(μ, μp), Σm, get_solver = get_solver, depth = depth + 1)
+    μp, αp, nopenp = fit_BnB(X, y, P, μ, Σp, depth = depth + 1, nnlsalg = nnlsalg)
+    μm, αm, nopenm = fit_BnB(X, y, P, min(μ, μp), Σm, depth = depth + 1, nnlsalg = nnlsalg)
 
     i = argmin([μ, μp, μm])
 
