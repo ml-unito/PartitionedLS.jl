@@ -1,5 +1,11 @@
+using Convex
+using PyCall
+using CSV
+using Tables
+
 struct Alt end         # Alternate Optimization approach
 struct AltNNLS end     # Alternate Optimization using Non Negative Least Squares
+
 
 
 function checkalpha(a, P)
@@ -48,7 +54,7 @@ A tuple of the form: `(opt, a, b, t, P)`
 
 """
 function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
-    T = 1000, η = 1.0, ϵ = 1e-6,
+    T = 1000, η = 0.0, ϵ = 1e-6,
     get_solver = get_ECOSSolver)
     M, K = size(P)
 
@@ -94,6 +100,7 @@ function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
     (p.optval, α.value, β.value, t.value, P)
 end
 
+
 """
 # fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η = 0.0, ϵ = 1e-6, T = 1000, nnlsalg = :pivot)
 
@@ -124,22 +131,23 @@ A tuple of the form: `(opt, a, b, t, P)`
 
 """
 function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
-    η = 0.0, ϵ = 1e-6, T = 1000, nnlsalg = :pivot)
-    if η != 0.0
-        @warn "PartitionedLS (Alt): fit called with NNLS option and η != 0. Assuming η==0"
-    end
+    η = false, ϵ = 1e-6, T = 1000, nnlsalg = :pivot)
 
     Xo, Po = homogeneousCoords(X, P)
+
+    if η
+        Xo, y = regularizingMatrix(X, y, η)
+    end
 
     M, K = size(Po)
 
     α = rand(Float32, M)
     β = (rand(Float32, K) .- 0.5) .* 10
-    t = rand(Float32, 1)
-    initvals = (0, α, β, t, Inf64)
+
+    initvals = (0, α, β, Inf64)
     loss = (a, b) -> norm(Xo * (Po .* a) * b - y, 2)
 
-    i_start, α, β, t, optval = initvals
+    i_start, α, β, optval = initvals
 
     oldoptval = 1e20
     optval = 1e10
@@ -150,13 +158,23 @@ function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
 
         Poβ = sum(Po .* β', dims = 2)
         Xoβ = Xo .* Poβ'
-        α = nonneg_lsq(Xoβ, y, alg = nnlsalg)
-        α = checkalpha(α, Po)
 
-        sumα = sum(Po .* α, dims = 1)
-        Poα = sum(Po .* sumα, dims = 2)
-        α = α ./ Poα
-        β = β .* sumα'
+        αvars = Variable(size(Xoβ, 2))
+        αloss = square(norm(Xoβ * αvars - y))
+        constraints = [Po' * αvars == ones(size(Po, 2)), αvars >= 0]
+        problem = minimize(αloss, constraints)
+        solve!(problem, () -> ECOS.Optimizer(verbose = 0))
+        α = αvars.value
+
+        # α = nonneg_lsq(Xoβ, y, alg = nnlsalg)
+        # α = checkalpha(α, Po)
+
+        # @info sum(abs.(Po' * α)) / length(α)
+
+        # sumα = sum(Po .* α, dims = 1)
+        # Poα = sum(Po .* sumα, dims = 2)
+        # α = α ./ Poα
+        # β = β .* sumα'
 
 
         if any(isnan, α)

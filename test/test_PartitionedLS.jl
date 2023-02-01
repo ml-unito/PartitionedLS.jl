@@ -1,10 +1,7 @@
 using Pkg
-Pkg.activate("..")
+Pkg.activate("PartitionedLSenv", shared=true)
 
 using PartitionedLS
-using ECOS
-using LinearAlgebra
-using Logging
 
 X = [[1.0 2.0 3.0]
      [3.0 3.0 4.0]
@@ -27,18 +24,18 @@ P = [[1 0]
 # @info "Calling Opt"
 # result_opt = fit(Opt, X, y, P, η = 0.0)
 
-@info "Calling Opt nnls"
-result_opt_nnls = fit(OptNNLS, X, y, P)
-opt, α, β, t, _ = result_opt_nnls
-@info "OptNNLS:", opt, α, β, t
+# @info "Calling Opt nnls"
+# result_opt_nnls = fit(OptNNLS, X, y, P)
+# opt, α, β, t, _ = result_opt_nnls
+# @info "OptNNLS:", opt, α, β, t
 
 # @info "Calling Alt"
 # result_alt = fit(Alt, X, y, P, η = 0.0)
 
 
-# @info "Calling Alt nnls"
-# result_alt_nnls = fit(AltNNLS, X, y, P, N=10)
-# opt, a, b, t, P = result_alt_nnls
+@info "Calling Alt nnls"
+result_alt_nnls = fit(AltNNLS, X, y, P)
+opt, a, b, t, P = result_alt_nnls
 
 @info "Calling BnB"
 opt, α, β, t, _ = fit(BnB, X, y, P)

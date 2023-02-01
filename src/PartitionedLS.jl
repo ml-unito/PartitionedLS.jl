@@ -1,7 +1,7 @@
 module PartitionedLS
 
 using Convex
-export fit, predict, Opt, Alt, OptNNLS, AltNNLS, BnB
+export fit, predict, Opt, Alt, OptNNLS, AltNNLS, BnB, regularizingMatrix
 
 import Base.size
 using LinearAlgebra
@@ -9,7 +9,7 @@ using ECOS
 using NonNegLeastSquares
 
 function get_ECOSSolver()
-  ECOS.Optimizer(verbose=0)
+  ECOS.Optimizer(verbose = 0)
 end
 
 
@@ -27,7 +27,28 @@ function homogeneousCoords(X, P::Array{Int,2})
   Xo = hcat(X, ones(size(X, 1), 1))
   Po::Matrix{Int} = vcat(hcat(P, zeros(size(P, 1))), vec1(size(P, 2) + 1))
 
-  Xo,Po
+  Xo, Po
+end
+
+"""
+  Incorporates in the datamatrix X additional rows to force a regularizing term into
+  an unregularized objective.
+
+  Assume that the objective has the form of |X w - y |^2, the idea is to add additional
+  size(w) rows to X (an y) such that:
+
+  - X_{N+j,j} = √μ
+  - X_{N+j,j'} = 0   if j≂̸j'
+  - y_{N+j} = 0
+"""
+function regularizingMatrix(X, y, μ)
+  lenw = size(X, 2)
+
+  newRows = I(lenw) .* sqrt(μ)
+  newX = vcat(X, newRows)
+  newY = vcat(y, zeros(lenw))
+
+  return newX, newY
 end
 
 """
