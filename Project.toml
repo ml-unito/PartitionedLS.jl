@@ -4,9 +4,11 @@ authors = ["boborbt <boborbt@gmail.com>"]
 version = "0.8.1"
 
 [deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 Convex = "f65535da-76fb-5f13-bab9-19810c17039a"
 Debugger = "31a5f54b-26ea-5ae9-a837-f05ce5417438"
 ECOS = "e2685f51-7e38-5353-a97d-a921fd2c8199"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 NonNegLeastSquares = "b7351bd1-99d9-5c5d-8786-f205a815c4d7"
+PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
 SCS = "c946c3f1-0d1f-5ce8-9dea-7daa1f7e2d13"
