@@ -31,6 +31,10 @@ function homogeneousCoords(X, P::Array{Int,2})
 end
 
 function regularizeProblem(X, y, P, η)
+  if η == 0
+    return X, y
+  end
+  
   Xn = X
   yn = y
   for k in 1:size(P, 2)
