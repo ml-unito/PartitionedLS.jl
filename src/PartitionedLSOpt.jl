@@ -162,7 +162,8 @@ function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
 
     # Rewriting the problem in homogenous coordinates
     Xo, Po = homogeneousCoords(X, P)
-    M, K = size(Po)
+    Xo, yo = regularizeProblem(Xo, y, Po, η)
+    _, K = size(Po)
 
     b_start, results = -1, []
 
@@ -170,8 +171,8 @@ function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
         @debug "Starting iteration $b/$(2^K-1)"
         β = indextobeta(b, K)
         Xb = bmatrix(Xo, Po, β)
-        α = nonneg_lsq(Xb, y, alg = nnlsalg)
-        optval = norm(Xo * (Po .* α) * β - y)
+        α = nonneg_lsq(Xb, yo, alg = nnlsalg)
+        optval = norm(Xo * (Po .* α) * β - yo)
 
         result = (optval, α[1:(end-1)], β[1:(end-1)], β[end] * α[end], P)
         push!(results, result)

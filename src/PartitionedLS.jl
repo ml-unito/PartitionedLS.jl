@@ -30,6 +30,19 @@ function homogeneousCoords(X, P::Array{Int,2})
   Xo, Po
 end
 
+function regularizeProblem(X, y, P, η)
+  Xn = X
+  yn = y
+  for k in 1:size(P, 2)
+    v = P[:, k] .== 1
+    v = reshape(convert(Vector{Float64}, v), 1, :)
+    Xn = vcat(Xn, sqrt(η) .* v)
+    yn = vcat(yn, zeros(1))
+  end
+
+  return Xn, yn
+end
+
 """
   Incorporates in the datamatrix X additional rows to force a regularizing term into
   an unregularized objective.
