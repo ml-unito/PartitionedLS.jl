@@ -9,7 +9,7 @@ using ECOS
 using NonNegLeastSquares
 
 function get_ECOSSolver()
-  ECOS.Optimizer(verbose = 0)
+  ECOS.Optimizer()
 end
 
 
