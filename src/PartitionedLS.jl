@@ -59,12 +59,12 @@ parameter η controls the strength of the regularization.
   - `yn`: the new target vector
 
 ## Main idea
-K new rows are added to the data matrix X, row ``k \in {1 \dots K}`` is a vector of zeros except for
+K new rows are added to the data matrix X, row ``k \\in \\{1 \\dots K\\}`` is a vector of zeros except for
 the components that corresponds to features belonging to the k-th partition, which is set to sqrt(η). 
 The target vector y is extended with K zeros.
 
-The point of this change is that when the objective function is evaluated as ``\|Xw - y\|^2``, the new part of
-  the matrix contributes to the loss with a factor of  ``η \sum \|w_i\|^2`` . This is equivalent to adding a regularization
+The point of this change is that when the objective function is evaluated as ``math \\|Xw - y\\|^2``, the new part of
+  the matrix contributes to the loss with a factor of  ``η \\sum \\|w_i\\|^2`` . This is equivalent to adding a regularization
   term to the objective function.
 """
 function regularizeProblem(X, y, P, η)
