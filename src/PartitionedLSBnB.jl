@@ -30,10 +30,10 @@ The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + 
 function fit(::Type{BnB}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
     η = 0.0, nnlsalg = :nnls)
     Xo, Po = homogeneousCoords(X, P)
-    Xo, Po = regularizeProblem(Xo, y, Po, η)
+    Xo, yo = regularizeProblem(Xo, y, Po, η)
     Σ::Array{Int,1} = []
 
-    opt, α, nopen = fit_BnB(Xo, y, Po, Inf, Σ, nnlsalg = nnlsalg)
+    opt, α, nopen = fit_BnB(Xo, yo, Po, Inf, Σ, nnlsalg = nnlsalg)
     β = sum(Po .* α, dims = 1)
     α = sum(Po .* α ./ β, dims = 2)
 
