@@ -131,13 +131,10 @@ A tuple of the form: `(opt, a, b, t, P)`
 
 """
 function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
-    η = false, ϵ = 1e-6, T = 1000, nnlsalg = :pivot)
+    η = 0.0, ϵ = 1e-6, T = 1000, nnlsalg = :pivot)
 
     Xo, Po = homogeneousCoords(X, P)
-
-    if η
-        Xo, y = regularizingMatrix(X, y, η)
-    end
+    Xo, yo = regularizeProblem(X, y, η)
 
     M, K = size(Po)
 
@@ -145,7 +142,7 @@ function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
     β = (rand(Float32, K) .- 0.5) .* 10
 
     initvals = (0, α, β, Inf64)
-    loss = (a, b) -> norm(Xo * (Po .* a) * b - y, 2)
+    loss = (a, b) -> norm(Xo * (Po .* a) * b - yo, 2)
 
     i_start, α, β, optval = initvals
 
@@ -160,7 +157,7 @@ function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
         Xoβ = Xo .* Poβ'
 
         αvars = Variable(size(Xoβ, 2))
-        αloss = square(norm(Xoβ * αvars - y))
+        αloss = square(norm(Xoβ * αvars - yo))
         constraints = [Po' * αvars == ones(size(Po, 2)), αvars >= 0]
         problem = minimize(αloss, constraints)
         solve!(problem, () -> ECOS.Optimizer(verbose = 0))
@@ -186,7 +183,7 @@ function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
         # ls problem with fixed alpha variables
 
         Xoα = Xo * (Po .* α)
-        β = Xoα \ y             # idiomatic Julia way to solve the least squares problem
+        β = Xoα \ yo             # idiomatic Julia way to solve the least squares problem
 
         oldoptval = optval
         optval = loss(α, β)

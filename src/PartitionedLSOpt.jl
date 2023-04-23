@@ -51,7 +51,7 @@ It uses a coplete enumeration strategy which is exponential in K, but guarantees
 * `y`: \$N\$ vector with the output values for each example
 * `P`: \$M × K\$ matrix specifying how to partition the \$M\$ attributes into \$K\$ subsets. \$P_{m,k}\$ should be 1 if attribute number \$m\$ belongs to
 partition \$k\$.
-* `η`: regularization factor, higher values implies more regularized solutions
+* `η`: regularization factor, higher values implies more regularized solutions (default: 0.0)
 * `get_solver`: a function returning the solver to be used. Defaults to () -> ECOSSolver()
 * `returnAllSolutions`: if true an additional output is appended to the resulting tuple containing all solutions found during the algorithm.
 
@@ -70,11 +70,8 @@ The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + 
 
 """
 function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
-    η = 1.0, get_solver = get_ECOSSolver,
+    η = 0.0, get_solver = get_ECOSSolver,
     returnAllSolutions = false)
-    if fake_run
-        return ()
-    end
 
     @debug "Regularization parameter set: Opt algorithm fitting using standard convex solver"
 
@@ -133,10 +130,10 @@ It uses a coplete enumeration strategy which is exponential in K, but guarantees
 * `y`: \$N\$ vector with the output values for each example
 * `P`: \$M × K\$ matrix specifying how to partition the \$M\$ attributes into \$K\$ subsets. \$P_{m,k}\$ should be 1 if attribute number \$m\$ belongs to
 partition \$k\$.
-* `η`: regularization factor, higher values implies more regularized solutions
+* `η`: regularization factor, higher values implies more regularized solutions (default: 0.0)
 * `get_solver`: a function returning the solver to be used. Defaults to () -> ECOSSolver()
 * `returnAllSolutions`: if true an additional output is appended to the resulting tuple containing all solutions found during the algorithm.
-* `nnlsalg`: the kind of nnls algorithm to be used during solving. Possible values are :pivot, :nnls, :fnnls
+* `nnlsalg`: the kind of nnls algorithm to be used during solving. Possible values are :pivot, :nnls, :fnnls (default: :nnls)
 
 ## Result
 
@@ -153,10 +150,7 @@ The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + 
 
 """
 function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
-    η = 0.0, nnlsalg = :pivot, returnAllSolutions = false)
-    if η != 0.0
-        @warn "PartitionedLS (Opt): fit called with NNLS option and η != 0. Assuming η==0"
-    end
+    η = 0.0, nnlsalg = :nnls, returnAllSolutions = false)
 
     @debug "Opt algorithm fitting  using non negative least square algorithm"
 

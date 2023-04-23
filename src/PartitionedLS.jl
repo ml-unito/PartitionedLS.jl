@@ -23,6 +23,19 @@ function vec1(n)
   result
 end
 
+
+"""
+Rewrites X and P in homogeneous coordinates. The result is a tuple (Xo, Po) where Xo is the
+homogeneous version of X and Po is the homogeneous version of P.
+
+## Arguments
+  - `X`: the data matrix
+  - `P`: the partition matrix
+
+## Return
+  - `Xo`: the homogeneous version of X
+  - `Po`: the homogeneous version of P
+"""
 function homogeneousCoords(X, P::Array{Int,2})
   Xo = hcat(X, ones(size(X, 1), 1))
   Po::Matrix{Int} = vcat(hcat(P, zeros(size(P, 1))), vec1(size(P, 2) + 1))
@@ -30,6 +43,30 @@ function homogeneousCoords(X, P::Array{Int,2})
   Xo, Po
 end
 
+"""
+Adds regularization terms to the problem. The regularization terms are added to the
+objective function as a sum of squares of the α variables. The regularization
+parameter η controls the strength of the regularization.
+
+## Arguments
+  - `X`: the data matrix
+  - `y`: the target vector
+  - `P`: the partition matrix
+  - `η`: the regularization parameter
+
+## Return
+  - `Xn`: the new data matrix
+  - `yn`: the new target vector
+
+## Main idea
+K new rows are added to the data matrix X, row ``k \in {1 \dots K}`` is a vector of zeros except for
+the components that corresponds to features belonging to the k-th partition, which is set to sqrt(η). 
+The target vector y is extended with K zeros.
+
+The point of this change is that when the objective function is evaluated as ``\|Xw - y\|^2``, the new part of
+  the matrix contributes to the loss with a factor of  ``η \sum \|w_i\|^2`` . This is equivalent to adding a regularization
+  term to the objective function.
+"""
 function regularizeProblem(X, y, P, η)
   if η == 0
     return X, y
@@ -47,26 +84,6 @@ function regularizeProblem(X, y, P, η)
   return Xn, yn
 end
 
-"""
-  Incorporates in the datamatrix X additional rows to force a regularizing term into
-  an unregularized objective.
-
-  Assume that the objective has the form of |X w - y |^2, the idea is to add additional
-  size(w) rows to X (an y) such that:
-
-  - X_{N+j,j} = √μ
-  - X_{N+j,j'} = 0   if j≂̸j'
-  - y_{N+j} = 0
-"""
-function regularizingMatrix(X, y, μ)
-  lenw = size(X, 2)
-
-  newRows = I(lenw) .* sqrt(μ)
-  newX = vcat(X, newRows)
-  newY = vcat(y, zeros(lenw))
-
-  return newX, newY
-end
 
 """
 # predict(α::Vector{Float64}, β::Vector{Float64}, t::Float64, P::Matrix{Int}, X::Matrix{Float64})::Vector{Float64}

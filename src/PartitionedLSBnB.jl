@@ -11,8 +11,8 @@ Implements the Branch and Bound algorithm to fit a Partitioned Least Squres mode
 * `y`: \$N\$ vector with the output values for each example
 * `P`: \$M × K\$ matrix specifying how to partition the \$M\$ attributes into \$K\$ subsets. \$P_{m,k}\$ should be 1 if attribute number \$m\$ belongs to
 partition \$k\$.
-* `η`: regularization factor, higher values implies more regularized solutions
-* nnlsalg: the kind of nnls algorithm to be used during solving. Possible values are :pivot, :nnls, :fnnls
+* `η`: regularization factor, higher values implies more regularized solutions (default: 0.0)
+* nnlsalg: the kind of nnls algorithm to be used during solving. Possible values are :pivot, :nnls, :fnnls (default: :nnls)
 
 ## Result
 
@@ -28,8 +28,9 @@ A tuple of the form: `(opt, a, b, t, P, nopen)`
 The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + t\$.
 """
 function fit(::Type{BnB}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
-    η = 1.0, nnlsalg = :pivot)
+    η = 0.0, nnlsalg = :nnls)
     Xo, Po = homogeneousCoords(X, P)
+    Xo, Po = regularizeProblem(Xo, y, Po, η)
     Σ::Array{Int,1} = []
 
     opt, α, nopen = fit_BnB(Xo, y, Po, Inf, Σ, nnlsalg = nnlsalg)
