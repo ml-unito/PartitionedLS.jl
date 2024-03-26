@@ -160,7 +160,7 @@ function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
         αloss = square(norm(Xoβ * αvars - yo))
         constraints = [Po' * αvars == ones(size(Po, 2)), αvars >= 0]
         problem = minimize(αloss, constraints)
-        solve!(problem, () -> ECOS.Optimizer(verbose = 0))
+        solve!(problem, () -> ECOS.Optimizer())
         α = αvars.value
 
         # α = nonneg_lsq(Xoβ, y, alg = nnlsalg)
