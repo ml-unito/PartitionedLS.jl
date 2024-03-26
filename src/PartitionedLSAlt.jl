@@ -134,7 +134,7 @@ function fit(::Type{AltNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
     η = 0.0, ϵ = 1e-6, T = 1000, nnlsalg = :pivot)
 
     Xo, Po = homogeneousCoords(X, P)
-    Xo, yo = regularizeProblem(X, y, η)
+    Xo, yo = regularizeProblem(Xo, y, Po, η)
 
     M, K = size(Po)
 
