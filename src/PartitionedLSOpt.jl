@@ -71,7 +71,7 @@ The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + 
 """
 function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
     η = 0.0, get_solver = get_ECOSSolver,
-    returnAllSolutions = false)
+    returnAllSolutions = false)::Tuple{Float64, Vector{Float64}, Vector{Float64}, Float64, Array{Int,2}}
 
     @debug "Regularization parameter set: Opt algorithm fitting using standard convex solver"
 
@@ -98,9 +98,9 @@ function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
     opt, a, b, t = cleanupResult(Opt, results[optindex], P)
 
     if returnAllSolutions
-        (opt, a, b, t, P), map((r) -> cleanupResult(Opt, r, P), results)
+        (opt, vec(a), vec(b), t, P), map((r) -> cleanupResult(Opt, r, P), results)
     else
-        (opt, a, b, t, P)
+        (opt, vec(a), vec(b), t, P)
     end
 end
 
@@ -150,7 +150,7 @@ The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + 
 
 """
 function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
-    η = 0.0, nnlsalg = :nnls, returnAllSolutions = false)
+    η = 0.0, nnlsalg = :nnls, returnAllSolutions = false)::Tuple{Float64, Vector{Float64}, Vector{Float64}, Float64, Array{Int,2}}
 
     @debug "Opt algorithm fitting  using non negative least square algorithm"
 
@@ -176,9 +176,9 @@ function fit(::Type{OptNNLS}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array
     opt, a, b, t = cleanupResult(OptNNLS, results[optindex], P)
 
     if returnAllSolutions
-        (opt, a, b, t, P), map((r) -> cleanupResult(OptNNLS, r, P), results)
+        (opt, vec(a), vec(b), t, P), map((r) -> cleanupResult(OptNNLS, r, P), results)
     else
-        (opt, a, b, t, P)
+        (opt, vec(a), vec(b), t, P)
     end
 end
 
