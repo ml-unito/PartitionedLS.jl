@@ -1,15 +1,17 @@
 module PartitionedLS
 
-using Convex
-export fit, predict, Opt, Alt, OptNNLS, AltNNLS, BnB, regularizingMatrix
+export fit, predict, Opt, Alt,BnB, regularizingMatrix
 
 import Base.size
 using LinearAlgebra
-using ECOS
 using NonNegLeastSquares
 
-function get_ECOSSolver()
-  ECOS.Optimizer()
+
+struct PartLSModel
+  α::Vector{Float64}
+  β::Vector{Float64}
+  t::Float64
+  P::Matrix{Int}
 end
 
 
@@ -113,8 +115,8 @@ Make predictions for the datataset `X` using the PartialLS model `model`.
 ## Return
  the predictions of the given model on examples in X. 
 """
-function predict(model, X::Array{Float64,2})
-  (_, α, β, t, P) = model
+function predict(model::PartLSModel, X::Array{Float64,2})::Vector{Float64}
+  (; α, β, t, P) = model
   predict(α, β, t, P, X)
 end
 
