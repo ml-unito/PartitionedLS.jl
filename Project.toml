@@ -11,7 +11,7 @@ NonNegLeastSquares = "b7351bd1-99d9-5c5d-8786-f205a815c4d7"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
-CSV = "^0.10"
+CSV = "0.10"
 DataFrames = "1.6"
 NonNegLeastSquares = "0.4"
 julia = "1.10"
