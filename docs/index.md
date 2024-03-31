@@ -86,23 +86,17 @@ P = [[1 0];
      [0 1]]
 
 
-# fit using the optimal algorithm and using generic solver
+# fit using the optimal algorithm 
 result_opt = fit(Opt, X, y, P, η = 0.0)
 
-# fit using the optimal algorithm using a non negative least squares
-# solver (numerical solutions should be more stable)
-result_opt_nnls = fit(OptNNLS, X, y, P)
-
-# fit using the iterative algorithm and a generic solver
+# fit using the iterative algorithm
 result_alt = fit(Alt, X, y, P, η = 0.0)
 
-# fit using the iterative algorithm using a non negative least squares
-# solver (numerical solutions should be more stable)
-result_alt_nnls = fit(AltNNLS, X, y, P)
+result_alt_nnls = fit(BnB, X, y, P)
 
 # Make predictions on the given data matrix. The function works
 # with results returned by anyone of the solvers.
-predict(result_opt, X)
+predict(result_opt.model, X)
 ```
 
 ## Performance comparisons
