@@ -1,6 +1,6 @@
 name = "PartitionedLS"
 uuid = "19f41c5e-8610-11e9-2f2a-0d67e7c5027f"
-authors = ["boborbt <boborbt@gmail.com>"]
+authors = ["Roberto Esposito <roberto.esposito@unito.it>"]
 version = "0.9.5"
 
 [deps]
@@ -12,6 +12,6 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
 CSV = "^0.10"
-DataFrames = "^1.6"
-NonNegLeastSquares = "^0.4"
-julia = "^1.10"
+DataFrames = "1.6"
+NonNegLeastSquares = "0.4"
+julia = "1.10"
