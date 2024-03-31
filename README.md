@@ -7,4 +7,4 @@ Linear least squares is one of the most widely used regression methods among sci
 Theoretical details about PartitionedLS can be found on [this paper](https://arxiv.org/abs/2006.16202).
 
 Instructions about how to intall the library and a complete example can be found
-on the [github pages of this project](https://ml-unito.github.io/PartitionedLS/).
+on the [github pages of this project](https://ml-unito.github.io/PartitionedLS.jl/).
