@@ -42,7 +42,7 @@ function cleanupResult(::Type{Opt}, result, P)::Tuple{Float64, PartLSModel}
 end
 
 """
-# fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η=1.0, get_solver=get_ECOSSolver, returnAllSolutions=false, nnlsalg=:pivot)
+    fit(::Type{Opt}, X::Matrix{Float64}, y::Vector{Float64}, P::Matrix{Int}; η=0.0, returnAllSolutions=false, nnlsalg=:nnls)
 
 Fits a PartialLS Regression model to the given data and resturns the learnt model (see the Result section). 
 It uses a coplete enumeration strategy which is exponential in K, but guarantees to find the optimal solution.
@@ -54,22 +54,29 @@ It uses a coplete enumeration strategy which is exponential in K, but guarantees
 * `P`: \$M × K\$ matrix specifying how to partition the \$M\$ attributes into \$K\$ subsets. \$P_{m,k}\$ should be 1 if attribute number \$m\$ belongs to
 partition \$k\$.
 * `η`: regularization factor, higher values implies more regularized solutions (default: 0.0)
-* `get_solver`: a function returning the solver to be used. Defaults to () -> ECOSSolver()
 * `returnAllSolutions`: if true an additional output is appended to the resulting tuple containing all solutions found during the algorithm.
 * `nnlsalg`: the kind of nnls algorithm to be used during solving. Possible values are :pivot, :nnls, :fnnls (default: :nnls)
 
 ## Result
 
-A tuple of the form: `(opt, a, b, t, P)`
+A NamedTuple with the following fields:
 
-* `opt`: optimal value of the objective function (loss + regularization)
-* `a`: values of the α variables at the optimal point
-* `b`: values of the β variables at the optimal point
-* `t`: the intercept at the optimal point
-* `P`: the partition matrix (copied from the input)
-* solutions: all solutions found during the execution (returned only if resultAllSolutions=true)
+- `opt`: optimal value of the objective function (loss + regularization)
+- `model`: a NamedTuple containing the following fields:
+    - `a`: values of the α variables at the optimal point
+    - `b`: values of the β variables at the optimal point
+    - `t`: the intercept at the optimal point
+    - `P`: the partition matrix (copied from the input)
+- solutions: all solutions found during the execution (returned only if resultAllSolutions=true)
 
-The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + t\$.
+## Example
+
+```julia
+X = rand(100, 10)
+y = rand(100)
+P = [1 0 0; 0 1 0; 0 0 1; 1 1 0; 0 1 1]
+result = fit(Opt, X, y, P)
+```
 
 """
 function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};

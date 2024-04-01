@@ -1,7 +1,7 @@
 using PartitionedLS
 using Documenter
 
-makedocs(sitename="My Documentation")
+makedocs(sitename="PartitionedLS.jl")
 
 # makedocs(
 #          sitename = "PartitionedLS.jl",

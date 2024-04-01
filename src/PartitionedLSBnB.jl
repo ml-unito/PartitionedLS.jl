@@ -1,7 +1,7 @@
 struct BnB end         # Branch and Bound approach
 
 """
-# fit(::Type{BnB}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, η=1.0, nnlsalg=:pivot)
+    fit(::Type{BnB}, X::Matrix{Float64}, y::Vector{Float64}, P::Matrix{Int}, η=0.0, nnlsalg=:nnls)
 
 Implements the Branch and Bound algorithm to fit a Partitioned Least Squres model.
 
@@ -18,17 +18,16 @@ partition \$k\$.
 
 A tuple of the form: `(opt, a, b, t, P, nopen)`
 
-* `opt`: optimal value of the objective function (loss + regularization)
-* `a`: values of the α variables at the optimal point
-* `b`: values of the β variables at the optimal point
-* `t`: the intercept at the optimal point
-* `P`: the partition matrix (copied from the input)
-* `nopen`: the number of nodes opened by the BnB algorithm
+- `opt`: optimal value of the objective function (loss + regularization)
+- `model`: a NamedTuple containing the following fields:
+    - `a`: values of the α variables at the optimal point
+    - `b`: values of the β variables at the optimal point
+    - `t`: the intercept at the optimal point
+    - `P`: the partition matrix (copied from the input)
+- `nopen`: the number of nodes opened by the BnB algorithm
 
-The output model predicts points using the formula: f(X) = \$X * (P .* a) * b + t\$.
 """
-function fit(::Type{BnB}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
-    η = 0.0, nnlsalg = :nnls)
+function fit(::Type{BnB}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η = 0.0, nnlsalg = :nnls)
     Xo, Po = homogeneousCoords(X, P)
     Xo, yo = regularizeProblem(Xo, y, Po, η)
     Σ::Array{Int,1} = []
