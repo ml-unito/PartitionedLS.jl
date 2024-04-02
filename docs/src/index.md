@@ -1,10 +1,3 @@
----
-layout: default
-title: Home
----
-
-  <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
-
 # Partitioned Least Squares
 
 Linear least squares is one of the most widely used regression methods among scientists in many fields. The simplicity of the model allows this method to be used when data is scarce and it is usually appealing to practitioners that need to gather some insight into the problem by inspecting the values of the learnt parameters. PartitionedLS is a variant of the linear least squares model allowing practitioners to partition the input features into groups of variables that they require to contribute similarly to the final result. 
@@ -13,7 +6,7 @@ Linear least squares is one of the most widely used regression methods among sci
 
 The Partitioned Least Squares model is formally defined as:
 
-$$
+```math
 \begin{gather*}
 \text{minimize}_{\mathbf{\alpha}, \mathbf{\beta}} \| \mathbf{X} \times (\mathbf{P} \circ \mathbf{\alpha}) \times \mathbf{\beta} - \mathbf{y} \|_2^2 \\
 \begin{aligned}
@@ -21,16 +14,16 @@ $$
                     &\mathbf{P}^T \times \mathbf{\alpha} = \mathbf{1}.
 \end{aligned}
 \end{gather*}
-$$
+```
 
 where: 
 
-- $$\mathbf{X}$$ is $$N \times M$$ data matrix;
-- $$\mathbf{P}$$ is a user-defined partition matrix having $$K$$ columns (one for each element of the partition), $$M$$ rows, and containing $$1$$ in $$P_{i,j}$$ if the $$i$$-th attribute belongs to the $$j$$-th partition and $$0$$ otherwise;
-- $$\mathbf{\beta}$$ is a vector weighting the importance of each set of attributes in the partition;
-- $$\mathbf{\alpha}$$ is a vector weighting the importance of each attribute within one of the sets in the partition. Note that the constraints imply that for each set in the partition the weights of the corresponding $$\alpha$$ variables are all positive and sum to $$1$$.
+- ``\mathbf{X}`` is ``N \times M`` data matrix;
+- ``\mathbf{P}`` is a user-defined partition matrix having ``K`` columns (one for each element of the partition), ``M`` rows, and containing ``1`` in ``P_{i,j}`` if the ``i``-th attribute belongs to the ``j``-th partition and ``0`` otherwise;
+- ``\mathbf{\beta}`` is a vector weighting the importance of each set of attributes in the partition;
+- ``\mathbf{\alpha}`` is a vector weighting the importance of each attribute within one of the sets in the partition. Note that the constraints imply that for each set in the partition the weights of the corresponding ``\alpha`` variables are all positive and sum to ``1``.
 
-The PartitionedLS problem is non-convex and NP-complete. The library provides two algorithms to solve the problem anyway: an iterative algorithm based on the Alternating Least Squares approach and an optimal algorithm that guarantees requiring however exponential time in the cardinality of the partition (i.e., it is mainly useful when $$K$$ is small).
+The PartitionedLS problem is non-convex and NP-complete. The library provides two algorithms to solve the problem anyway: an iterative algorithm based on the Alternating Least Squares approach and an optimal algorithm that guarantees requiring however exponential time in the cardinality of the partition (i.e., it is mainly useful when ``K`` is small).
 
 More details can be found in the paper [Partitioned Least Squares](https://arxiv.org/abs/2006.16202).
 
@@ -46,13 +39,10 @@ Just add it as a dependency to your Julia environment. Launch julia from the mai
 activate .
 
 # Adds the library to the environment
-add git@github.com:ml-unito/PartitionedLS.git
+add PartitionedLS
 ```
 
 ## To use this library
-
-See the [library documentation](jldocs/build/index.html) for details about
-each specific method implemented in the library.
 
 You will need a matrix P describing the partitioning of your variables, e.g.:
 
@@ -92,6 +82,7 @@ result_opt = fit(Opt, X, y, P, η = 0.0)
 # fit using the iterative algorithm
 result_alt = fit(Alt, X, y, P, η = 0.0)
 
+# fit using the BnB algorithm
 result_alt_nnls = fit(BnB, X, y, P)
 
 # Make predictions on the given data matrix. The function works
@@ -99,11 +90,8 @@ result_alt_nnls = fit(BnB, X, y, P)
 predict(result_opt.model, X)
 ```
 
-## Performance comparisons
-
-### Branch and Bound algorithm 
-
-The following graphs show the performances of the BnB algorithm in several experimental conditions. The datasets are generated synthetically by varying a number of parameters: $N$ (the number of examples), $K$ (the number of sets in the partition). In all these experiments the number of features has been kept fixed (=100).
-
-<iframe src="BnB_nP.html" width="100%" height="300px"></iframe>
-<iframe src="BnB_N.html" width="100%" height="300px"></iframe>
+## Function Documentation
+```@docs
+fit
+predict
+```

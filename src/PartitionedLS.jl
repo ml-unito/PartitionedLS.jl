@@ -88,7 +88,7 @@ end
 
 
 """
-  predict(α::Vector{Float64}, β::Vector{Float64}, t::Float64, P::Matrix{Int}, X::Matrix{Float64})::Vector{Float64}
+    predict(α::Vector{Float64}, β::Vector{Float64}, t::Float64, P::Matrix{Int}, X::Matrix{Float64})::Vector{Float64}
 
 ## Result
 the prediction for the partitioned least squares problem with solution α, β, t over the dataset X and partition matrix P
@@ -99,7 +99,7 @@ end
 
 
 """
-  predict(model, X)::Vector{Float64}
+    predict(model, X)::Vector{Float64}
 
 Make predictions for the datataset `X` using the PartialLS model `model`.
 
