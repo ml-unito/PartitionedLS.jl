@@ -9,9 +9,9 @@ PartitionedLS is a **variant** of the linear least squares model allowing practi
 For instance, when analyzing complex chemical compounds, it is possible to group together fine-grained features to obtain a partition which refers to high-level properties of the compound (such as structural, interactive and bond-forming among others), and knowing how much each high-level property contributes to the result of the analysis is often of great practical value. The PartitionedLS squares problem allows a practitioner to specify how to group the variables together. 
 
 Then, the target value for a new sample $x$ will be predicted as:
-$$
+```math
 f(x) = \sum_{k=1}^{K} \beta_i \sum_{m \in P_k} \alpha_m x_m + t
-$$
+```
 where: 
 - $K$ is the number of groups;
 - $P_k$ is the set of indices of the variables in the $k$-th group;
