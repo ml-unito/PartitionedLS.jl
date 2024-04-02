@@ -1,5 +1,7 @@
 # Partitioned Least Squares
 
+![Static Badge](https://img.shields.io/badge/Docs-%E2%9C%93-green) ![Static Badge](https://img.shields.io/badge/Tests-%E2%9C%93-green)
+
 Linear least squares is one of the most widely used regression methods among scientists in many fields. The simplicity of the model allows this method to be used when data is scarce and it is usually appealing to practitioners that need to gather some insight into the problem by inspecting the values of the learnt parameters. 
 
 PartitionedLS is a **variant** of the linear least squares model allowing practitioners to **partition the input features into groups of variables** that they require to contribute with the same sign to the final result. 
