@@ -1,6 +1,5 @@
 using PartitionedLS
 using Test
-using Random
 
 X = [[1.0 2.0 3.0]
      [3.0 3.0 4.0]
@@ -28,7 +27,6 @@ P = [[1 0]
 end
 
 @testset "Alt" begin
-    Random.seed(1234)
     result = fit(Alt, X, y, P, η=0.0)
     opt = result.opt
     y_pred = predict(result.model, X)
