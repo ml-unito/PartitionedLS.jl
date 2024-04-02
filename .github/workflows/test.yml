@@ -19,7 +19,7 @@ jobs:
         julia-version: ['1']
         julia-arch: [x64]
         os: [ubuntu-latest]
-        exclude:
+        # exclude:
           # - os: ubuntu-latest
           #   julia-arch: x86
 
