@@ -55,8 +55,10 @@ You can choose between three algorithms to solve the problem: `Opt`, `Alt`, and 
 
 # Additional Resources
 
-Theoretical details about PartitionedLS can be found on [this paper](https://arxiv.org/abs/2006.16202).
+# Additional Resources
 
-Instructions about how to intall the library and a complete example can be found
-on the [github pages of this project](https://ml-unito.github.io/PartitionedLS.jl/).
+For theoretical insights into PartitionedLS, please refer to [this paper](https://arxiv.org/abs/2006.16202).
+
+To access installation instructions and for the documentation of the library visit the [GitHub Pages of this project](https://ml-unito.github.io/PartitionedLS.jl/).
+
 
