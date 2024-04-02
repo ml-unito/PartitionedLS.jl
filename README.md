@@ -53,7 +53,7 @@ y_hat = predict(result.model, X)
 You can choose between three algorithms to solve the problem: `Opt`, `Alt`, and `BnB`. The `Opt` algorithm is the optimal one, but it is exponential in the number of partitions. The `Alt` algorithm is an iterative one, based on the Alternating Least Squares approach. The `BnB` algorithm is a variant of the `Opt` algorithm that is often faster in practice and still guarantees the optimal solution.
 
 
-# To learn more
+# Additional Resources
 
 Theoretical details about PartitionedLS can be found on [this paper](https://arxiv.org/abs/2006.16202).
 
