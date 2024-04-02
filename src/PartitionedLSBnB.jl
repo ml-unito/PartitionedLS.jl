@@ -1,7 +1,7 @@
 struct BnB end         # Branch and Bound approach
 
 """
-    fit(::Type{BnB}, X::Matrix{Float64}, y::Vector{Float64}, P::Matrix{Int}, η=0.0, nnlsalg=:nnls)
+    $(TYPEDSIGNATURES)
 
 Implements the Branch and Bound algorithm to fit a Partitioned Least Squres model.
 
@@ -19,11 +19,7 @@ partition \$k\$.
 A tuple of the form: `(opt, a, b, t, P, nopen)`
 
 - `opt`: optimal value of the objective function (loss + regularization)
-- `model`: a NamedTuple containing the following fields:
-    - `a`: values of the α variables at the optimal point
-    - `b`: values of the β variables at the optimal point
-    - `t`: the intercept at the optimal point
-    - `P`: the partition matrix (copied from the input)
+- `model`: a [PartLSModel](@ref)
 - `nopen`: the number of nodes opened by the BnB algorithm
 
 """

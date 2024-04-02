@@ -21,7 +21,7 @@ end
 
 
 """
-    fit(::Type{Alt}, X::Matrix{Float64}, y::Vector{Float64}, P::Matrix{Int}; η = 0.0, ϵ = 1e-6, T = 100, nnlsalg = :nnls)
+    $(TYPEDSIGNATURES)
 
 Fits a PartitionedLS model by alternating the optimization of the α and β variables. This version uses 
 an optimization strategy based on non-negative-least-squaes solvers. This formulation is faster and 
@@ -31,27 +31,21 @@ more numerically stable with respect to `fit(Alt, ...)``.
 
 * `X`: \$N × M\$ matrix describing the examples
 * `y`: \$N\$ vector with the output values for each example
-* `P`: \$M × K\$ matrix specifying how to partition the \$M\$ attributes into \$K\$ subsets. \$P_{m,k}\$ should be 1 if attribute number \$m\$ belongs to
-partition \$k\$.
-* `η`: regularization factor, higher values implies more regularized solutions
-* `T`: number of alternating loops to be performed, defaults to 1000.
+* `P`: \$M × K\$ matrix specifying how to partition the \$M\$ attributes into \$K\$ subsets. \$P_{m,k}\$ should be 1 if attribute number \$m\$ belongs to partition \$k\$.
+* `η`: regularization factor, higher values implies more regularized solutions. Default is 0.0.
+* `T`: number of alternating loops to be performed. Default is 100.
 * `ϵ`: minimum relative improvement in the objective function before stopping the optimization. Default is 1e-6
-* `nnlsalg`: specific flavour of nnls algorithm to be used, possible values are `:pivot`, `:nnls`, `:fnnls`, default is :nnls
+* `nnlsalg`: specific flavour of nnls algorithm to be used, possible values are `:pivot`, `:nnls`, `:fnnls`. Default is :nnls
 
 ## Result
 
 A NamedTuple with the following fields:
 
 - `opt`: optimal value of the objective function (loss + regularization)
-- `model`: a NamedTuple containing the following fields:
-    - `a`: values of the α variables at the optimal point
-    - `b`: values of the β variables at the optimal point
-    - `t`: the intercept at the optimal point
-    - `P`: the partition matrix (copied from the input)
-
+- `model`: a [PartLSModel](@ref)
 """
 function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
-    η = 0.0, ϵ = 1e-6, T = 100, nnlsalg = :nnls)::@NamedTuple{opt::Float64,model::PartLSModel}
+    η = 0.0, ϵ = 1e-6, T = 100, nnlsalg = :nnls)
 
     Xo, Po = homogeneousCoords(X, P)
     Xo, yo = regularizeProblem(Xo, y, Po, η)

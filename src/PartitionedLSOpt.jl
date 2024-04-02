@@ -42,7 +42,7 @@ function cleanupResult(::Type{Opt}, result, P)::Tuple{Float64, PartLSModel}
 end
 
 """
-    fit(::Type{Opt}, X::Matrix{Float64}, y::Vector{Float64}, P::Matrix{Int}; η=0.0, returnAllSolutions=false, nnlsalg=:nnls)
+    $(TYPEDSIGNATURES)
 
 Fits a PartialLS Regression model to the given data and resturns the learnt model (see the Result section). 
 It uses a coplete enumeration strategy which is exponential in K, but guarantees to find the optimal solution.
@@ -62,11 +62,7 @@ partition \$k\$.
 A NamedTuple with the following fields:
 
 - `opt`: optimal value of the objective function (loss + regularization)
-- `model`: a NamedTuple containing the following fields:
-    - `a`: values of the α variables at the optimal point
-    - `b`: values of the β variables at the optimal point
-    - `t`: the intercept at the optimal point
-    - `P`: the partition matrix (copied from the input)
+- `model`: a [PartLSModel](@ref)
 - solutions: all solutions found during the execution (returned only if resultAllSolutions=true)
 
 ## Example
@@ -80,7 +76,7 @@ result = fit(Opt, X, y, P)
 
 """
 function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
-    η=0.0, nnlsalg=:nnls, returnAllSolutions=false)::@NamedTuple{opt::Float64,model::PartLSModel}
+    η=0.0, nnlsalg=:nnls, returnAllSolutions=false)
 
     @debug "Opt algorithm fitting  using non negative least square algorithm"
 

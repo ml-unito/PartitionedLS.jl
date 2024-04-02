@@ -90,8 +90,9 @@ result_alt_nnls = fit(BnB, X, y, P)
 predict(result_opt.model, X)
 ```
 
-## Function Documentation
+## API Documentation
 ```@docs
+PartLSModel
 fit
 predict
 ```

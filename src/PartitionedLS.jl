@@ -1,16 +1,41 @@
 module PartitionedLS
 
-export fit, predict, Opt, Alt,BnB, regularizingMatrix
+export fit, predict, PartLSModel, Opt, Alt,BnB, regularizingMatrix
 
 import Base.size
 using LinearAlgebra
 using NonNegLeastSquares
+using DocStringExtensions
 
 
+"""
+    $(TYPEDEF)
+
+The PartLSModel struct represents the solution of the partitioned least squares problem. 
+  It contains the values of the α and β variables, the intercept t and the partition matrix P.
+
+## Fields
+$(TYPEDFIELDS)
+"""
 struct PartLSModel
+  """
+  The values of the α variables. For each partition ``k``, it holds the values of the α variables
+  are such that ``\\sum_{i \\in P_k} \\alpha_{k} = 1``.
+  """
   α::Vector{Float64}
+  """
+  The values of the β variables. For each partition ``k``, ``\\beta_k`` is the coefficient that multiplies the
+  features in the k-th partition.
+  """
   β::Vector{Float64}
+  """
+  The intercept term of the model.
+  """
   t::Float64
+  """
+  The partition matrix. It is a binary matrix where each row corresponds to a partition and each column
+  corresponds to a feature. The element ``P_{k, i} = 1`` if feature ``i`` belongs to partition ``k``.
+  """
   P::Matrix{Int}
 end
 
@@ -88,35 +113,30 @@ end
 
 
 """
-    predict(α::Vector{Float64}, β::Vector{Float64}, t::Float64, P::Matrix{Int}, X::Matrix{Float64})::Vector{Float64}
+    $(TYPEDSIGNATURES)
 
 ## Result
 the prediction for the partitioned least squares problem with solution α, β, t over the dataset X and partition matrix P
 """
-function predict(α::Vector{Float64}, β::Vector{Float64}, t::Float64, P::Matrix{Int}, X::Matrix{Float64})::Vector{Float64}
+function predict(α::Vector{Float64}, β::Vector{Float64}, t::Float64, P::Matrix{Int}, X::Matrix{Float64})
   X * (P .* α) * β .+ t
 end
 
 
 """
-    predict(model, X)::Vector{Float64}
+    $(TYPEDSIGNATURES)
+
 
 Make predictions for the datataset `X` using the PartialLS model `model`.
 
 ## Arguments
-  - `model` is a NamedTuple in the form returned by fit functions, it shall contains the following elements:
-    - `opt`: the optimal value of the objective attained by the fit function
-    - 'model': a NamedTuple containing the following elements:
-      - `α`: the values of the α variables
-      - `β`: the values of the β variables
-      - `t`: the value of the t variable
-      - `P`: the partition matrix
+  - `model`: a [PartLSModel](@ref)
   - `X`: the data containing the examples for which the predictions are sought
   
 ## Return
  the predictions of the given model on examples in X. 
 """
-function predict(model::PartLSModel, X::Array{Float64,2})::Vector{Float64}
+function predict(model::PartLSModel, X::Array{Float64,2})
   (; α, β, t, P) = model
   predict(α, β, t, P, X)
 end

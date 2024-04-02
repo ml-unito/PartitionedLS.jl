@@ -2,7 +2,7 @@
 
 julia_version = "1.10.2"
 manifest_format = "2.0"
-project_hash = "877a232a197196180db72a96664c37521fecf33a"
+project_hash = "dfe9f390d9d8ab4426de955a7071609fc104c210"
 
 [[deps.ANSIColoredPrinters]]
 git-tree-sha1 = "574baf8110975760d391c710b6341da1afa48d8c"
@@ -288,7 +288,7 @@ uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
 version = "2.8.1"
 
 [[deps.PartitionedLS]]
-deps = ["CSV", "DataFrames", "LinearAlgebra", "NonNegLeastSquares", "Test"]
+deps = ["CSV", "DataFrames", "DocStringExtensions", "LinearAlgebra", "NonNegLeastSquares", "Test"]
 path = ".."
 uuid = "19f41c5e-8610-11e9-2f2a-0d67e7c5027f"
 version = "0.9.5"
