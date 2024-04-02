@@ -23,7 +23,9 @@ jobs:
           - os: macOS-latest
             julia-arch: x86
           - os: ubuntu-latest
-            julia-arch: [arm64, x86]
+            julia-arch: arm64
+          - os: ubuntu-latest
+            julia-arch: x86
 
     steps:
       - uses: actions/checkout@v4
