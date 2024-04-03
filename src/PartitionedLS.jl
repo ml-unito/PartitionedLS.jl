@@ -1,23 +1,24 @@
 module PartitionedLS
 
-export fit, predict, PartLSModel, Opt, Alt,BnB, regularizingMatrix
+export fit, predict, PartLS, PartLSFitResult, Opt, Alt,BnB, regularizingMatrix
 
 import Base.size
 using LinearAlgebra
 using NonNegLeastSquares
 using DocStringExtensions
+using MLJModelInterface
 
 
 """
     $(TYPEDEF)
 
-The PartLSModel struct represents the solution of the partitioned least squares problem. 
+The PartLSFitResult struct represents the solution of the partitioned least squares problem. 
   It contains the values of the α and β variables, the intercept t and the partition matrix P.
 
 ## Fields
 $(TYPEDFIELDS)
 """
-struct PartLSModel
+struct PartLSFitResult
   """
   The values of the α variables. For each partition ``k``, it holds the values of the α variables
   are such that ``\\sum_{i \\in P_k} \\alpha_{k} = 1``.
@@ -130,13 +131,13 @@ end
 Make predictions for the datataset `X` using the PartialLS model `model`.
 
 ## Arguments
-  - `model`: a [PartLSModel](@ref)
+  - `model`: a [PartLSFitResult](@ref)
   - `X`: the data containing the examples for which the predictions are sought
   
 ## Return
  the predictions of the given model on examples in X. 
 """
-function predict(model::PartLSModel, X::Array{Float64,2})
+function predict(model::PartLSFitResult, X::Array{Float64,2})
   (; α, β, t, P) = model
   predict(α, β, t, P, X)
 end
@@ -145,5 +146,24 @@ end
 include("PartitionedLSAlt.jl")
 include("PartitionedLSOpt.jl")
 include("PartitionedLSBnB.jl")
+
+
+MLJModelInterface.@mlj_model mutable struct PartLS <: MLJModelInterface.Deterministic
+  Optimizer::Union{Type{Opt},Type{Alt},Type{BnB}} = Opt
+  P::Matrix{Int} = 0.5::(all(_[i, j] == 0 || _[i, j] == 1 for i in range(1, size(_, 1)) for j in range(1, size(_, 2))))
+  η::Float64 = 0.0::(_ >= 0)
+end
+
+function MLJModelInterface.fit(m::PartLS, verbosity, X, y)
+  return PartitionedLS.fit(m.Optimizer, X, y, m.P, η=m.η)
+end
+
+function MLJModelInterface.fitted_params(model::PartLS, fitresult)
+  return fitresult
+end
+
+function MLJModelInterface.predict(model::PartLS, fitresult, X)
+  return PartitionedLS.predict(fitresult, X)
+end
 
 end

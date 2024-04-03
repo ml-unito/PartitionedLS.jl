@@ -29,7 +29,7 @@ function bmatrix(X, P, β)
 end
 
 
-function cleanupResult(::Type{Opt}, result, P)::Tuple{Float64, PartLSModel}
+function cleanupResult(::Type{Opt}, result, P)
     opt, a, b, t, _ = result
 
     A = sum(P .* a, dims = 1)
@@ -38,7 +38,7 @@ function cleanupResult(::Type{Opt}, result, P)::Tuple{Float64, PartLSModel}
     A[A.==0.0] .= 1.0 # substituting all 0.0 with 1.0
     a = sum((P .* a) ./ A, dims = 2)
 
-    return opt, PartLSModel(vec(a), vec(b), t, P)
+    return opt, PartLSFitResult(vec(a), vec(b), t, P)
 end
 
 """
@@ -56,14 +56,6 @@ partition \$k\$.
 * `η`: regularization factor, higher values implies more regularized solutions (default: 0.0)
 * `returnAllSolutions`: if true an additional output is appended to the resulting tuple containing all solutions found during the algorithm.
 * `nnlsalg`: the kind of nnls algorithm to be used during solving. Possible values are :pivot, :nnls, :fnnls (default: :nnls)
-
-## Result
-
-A NamedTuple with the following fields:
-
-- `opt`: optimal value of the objective function (loss + regularization)
-- `model`: a [PartLSModel](@ref)
-- solutions: all solutions found during the execution (returned only if resultAllSolutions=true)
 
 ## Example
 
@@ -102,9 +94,9 @@ function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
     opt, model = cleanupResult(Opt, results[optindex], P)
 
     if returnAllSolutions
-        return (opt = opt, model = model, solutions = map((r) -> cleanupResult(Opt, r, P), results))
+        return (model, nothing, (;solutions = map((r) -> cleanupResult(Opt, r, P), results)))
     else
-        return (opt = opt, model)
+        return (model, nothing, nothing)
     end
 end
 

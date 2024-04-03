@@ -32,7 +32,7 @@ function fit(::Type{BnB}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
     β = sum(Po .* α, dims = 1)
     α = sum(Po .* α ./ β, dims = 2)
 
-    return (opt=opt, model = PartLSModel(α[1:end-1], β[1:end-1], β[end], P), nopen=nopen)
+    return (PartLSFitResult(α[1:end-1], β[1:end-1], β[end], P), nothing, (; opt=opt, nopen=nopen))
 end
 
 function sum_max_0_αi_αj(P::Array{Int,2}, α::Array{Float64,1})

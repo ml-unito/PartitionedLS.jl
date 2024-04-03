@@ -106,7 +106,7 @@ function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
         i += 1
     end
 
-    result = (opt=optval, model=PartLSModel(α[1:end-1], β[1:end-1], β[end] * α[end], P))
+    result = (PartLSFitResult(α[1:end-1], β[1:end-1], β[end] * α[end], P), nothing, (;opt=optval))
 
     @debug "Exiting with optimality gap: $(abs(oldoptval - optval))"
 
