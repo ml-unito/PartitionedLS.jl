@@ -1,12 +1,18 @@
 module PartitionedLS
 
-export fit, predict, PartLS, PartLSFitResult, Opt, Alt,BnB, regularizingMatrix
+export fit, predict, PartLS, PartLSFitResult, Opt, Alt, BnB, regularizingMatrix
 
 import Base.size
 using LinearAlgebra
 using NonNegLeastSquares
 using DocStringExtensions
 using MLJModelInterface
+using MLJBase
+using Tables
+
+import MLJModelInterface.fit
+import MLJModelInterface.fitted_params
+import MLJModelInterface.predict
 
 
 """
@@ -155,6 +161,7 @@ MLJModelInterface.@mlj_model mutable struct PartLS <: MLJModelInterface.Determin
 end
 
 function MLJModelInterface.fit(m::PartLS, verbosity, X, y)
+  X = MLJBase.matrix(X)
   return PartitionedLS.fit(m.Optimizer, X, y, m.P, η=m.η)
 end
 
@@ -163,6 +170,7 @@ function MLJModelInterface.fitted_params(model::PartLS, fitresult)
 end
 
 function MLJModelInterface.predict(model::PartLS, fitresult, X)
+  X = MLJBase.matrix(X)
   return PartitionedLS.predict(fitresult, X)
 end
 
