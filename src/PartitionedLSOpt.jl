@@ -96,7 +96,7 @@ function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int
     if returnAllSolutions
         return (model, nothing, (;solutions = map((r) -> cleanupResult(Opt, r, P), results)))
     else
-        return (model, nothing, nothing)
+        return (model, nothing, (; opt=opt))
     end
 end
 

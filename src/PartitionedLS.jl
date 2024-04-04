@@ -9,6 +9,7 @@ using DocStringExtensions
 using MLJModelInterface
 using MLJBase
 using Tables
+using Random
 
 import MLJModelInterface.fit
 import MLJModelInterface.fitted_params
@@ -158,10 +159,18 @@ MLJModelInterface.@mlj_model mutable struct PartLS <: MLJModelInterface.Determin
   Optimizer::Union{Type{Opt},Type{Alt},Type{BnB}} = Opt
   P::Matrix{Int} = 0.5::(all(_[i, j] == 0 || _[i, j] == 1 for i in range(1, size(_, 1)) for j in range(1, size(_, 2))))
   η::Float64 = 0.0::(_ >= 0)
+  ϵ::Float64 = 1e-6::(_ > 0)
+  T::Int = 100::(_ > 0)
+  rgn::Union{Nothing,Int,AbstractRNG} = nothing
 end
 
 function MLJModelInterface.fit(m::PartLS, verbosity, X, y)
   X = MLJBase.matrix(X)
+
+  if m.Optimizer == Alt
+    return PartitionedLS.fit(Alt, X, y, m.P, η=m.η, ϵ=m.ϵ, T=m.T, rgn=m.rgn)
+  end
+
   return PartitionedLS.fit(m.Optimizer, X, y, m.P, η=m.η)
 end
 

@@ -45,15 +45,22 @@ A NamedTuple with the following fields:
 - `model`: a [PartLSModel](@ref)
 """
 function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
-    η = 0.0, ϵ = 1e-6, T = 100, nnlsalg = :nnls)
+    η = 0.0, ϵ = 1e-6, T = 100, nnlsalg = :nnls, rgn = nothing)
 
     Xo, Po = homogeneousCoords(X, P)
     Xo, yo = regularizeProblem(Xo, y, Po, η)
 
     M, K = size(Po)
 
-    α = rand(Float32, M)
-    β = (rand(Float32, K) .- 0.5) .* 10
+    if rgn === nothing
+        rgn = rand
+    elseif isa(rgn, Int)
+        Random.seed!(rgn)
+        rgn = rand
+    end
+
+    α = rgn(Float32, M)
+    β = (rgn(Float32, K) .- 0.5) .* 10
 
     initvals = (0, α, β, Inf64)
     loss = (a, b) -> norm(Xo * (Po .* a) * b - yo, 2)
