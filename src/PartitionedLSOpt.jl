@@ -1,14 +1,15 @@
 struct Opt end         # Optimal algorithm
 
-"""
-indextobeta(b::Integer, K::Integer)::Array{Int64,1}
 
-returns 2 * bin(b,K) - 1
-
-where bin(b,K) is a vector of K elements containing the binary
-representation of b.
-"""
 function indextobeta(b::Integer, K::Integer)
+    """
+    indextobeta(b::Integer, K::Integer)::Array{Int64,1}
+
+    returns 2 * bin(b,K) - 1
+
+    where bin(b,K) is a vector of K elements containing the binary
+    representation of b.
+    """
     result::Array{Int64,1} = []
     for k = 1:K
         push!(result, 2(b % 2) - 1)
@@ -18,11 +19,12 @@ function indextobeta(b::Integer, K::Integer)
     result
 end
 
-"""
-Returns the matrix obtained multiplying each element in X to the associated
-weight in β. 
-"""
 function bmatrix(X, P, β)
+    """
+        $(TYPEDSIGNATURES)
+    Returns the matrix obtained multiplying each element in X to the associated
+    weight in β. 
+    """
     Pβ = P .* β'
     featuremul = sum(Pβ, dims = 2)
     X .* featuremul'

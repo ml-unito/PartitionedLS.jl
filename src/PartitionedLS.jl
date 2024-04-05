@@ -1,6 +1,6 @@
 module PartitionedLS
 
-export fit, predict, PartLS, PartLSFitResult, Opt, Alt, BnB, regularizingMatrix
+export fit, predict, PartLS, PartLSFitResult, Opt, Alt, BnB, regularizeProblem, homogeneousCoords
 
 import Base.size
 using LinearAlgebra
@@ -154,21 +154,55 @@ include("PartitionedLSAlt.jl")
 include("PartitionedLSOpt.jl")
 include("PartitionedLSBnB.jl")
 
+"""
+    $(TYPEDEF)
 
+The PartLS struct represents a partitioned least squares model. 
+Fields are:
+- `Optimizer`: the optimization algorithm to use. It can be `Opt`, `Alt` or `BnB`.
+- `P`: the partition matrix. It is a binary matrix where each row corresponds to a partition and each column
+  corresponds to a feature. The element `P_{k, i} = 1` if feature `i` belongs to partition `k`.
+- `η`: the regularization parameter. It controls the strength of the regularization.
+- `ϵ`: the tolerance parameter. It is used to determine when the Alt optimization algorithm has converged. Only used by the `Alt` algorithm.
+- `T`: the maximum number of iterations. It is used to determine when to stop the Alt optimization algorithm has converged. Only used by the `Alt` algorithm.
+- `rng`: the random number generator to use. 
+  - If `nothing`, the global random number generator `rand` is used.
+  - If an integer, the global number generator `rand` is used after seeding it with the given integer.
+  - If an object of type `AbstractRNG`, the given random number generator is used.
+
+## Example
+```julia
+model = PartLS(P=P, Optimizer=Alt, rng=123)
+```
+"""
 MLJModelInterface.@mlj_model mutable struct PartLS <: MLJModelInterface.Deterministic
   Optimizer::Union{Type{Opt},Type{Alt},Type{BnB}} = Opt
   P::Matrix{Int} = 0.5::(all(_[i, j] == 0 || _[i, j] == 1 for i in range(1, size(_, 1)) for j in range(1, size(_, 2))))
   η::Float64 = 0.0::(_ >= 0)
   ϵ::Float64 = 1e-6::(_ > 0)
   T::Int = 100::(_ > 0)
-  rgn::Union{Nothing,Int,AbstractRNG} = nothing
+  rng::Union{Nothing,Int,AbstractRNG} = nothing
 end
 
+
+"""
+    $(TYPEDSIGNATURES)
+
+Fits a PartitionedLS Regression model to the given data and resturns the learnt model (see the Result section).
+It conforms to the MLJ interface.
+
+## Arguments
+- `m`: A [`PartLS`](@ref) model to fit
+- `verbosity`: the verbosity level
+- `X`: the data matrix
+- `y`: the target vector
+
+"""
 function MLJModelInterface.fit(m::PartLS, verbosity, X, y)
   X = MLJBase.matrix(X)
 
   if m.Optimizer == Alt
-    return PartitionedLS.fit(Alt, X, y, m.P, η=m.η, ϵ=m.ϵ, T=m.T, rgn=m.rgn)
+    return PartitionedLS.fit(Alt, X, y, m.P, η=m.η, ϵ=m.ϵ, T=m.T, rng=m.rng)
   end
 
   return PartitionedLS.fit(m.Optimizer, X, y, m.P, η=m.η)
@@ -177,6 +211,13 @@ end
 function MLJModelInterface.fitted_params(model::PartLS, fitresult)
   return fitresult
 end
+
+"""
+    $(TYPEDSIGNATURES)
+
+Make predictions for the datataset `X` using the PartitionedLS model `model`.
+It conforms to the MLJ interface.
+"""
 
 function MLJModelInterface.predict(model::PartLS, fitresult, X)
   X = MLJBase.matrix(X)

@@ -39,28 +39,29 @@ more numerically stable with respect to `fit(Alt, ...)``.
 
 ## Result
 
-A NamedTuple with the following fields:
+A Tuple with the following fields:
 
-- `opt`: optimal value of the objective function (loss + regularization)
-- `model`: a [PartLSModel](@ref)
+1. a `PartLSFitResult` object containing the fitted model
+2. a `nothing` object
+3. a NamedTuple with a field `opt` containing the optimal value of the objective function
 """
 function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
-    η = 0.0, ϵ = 1e-6, T = 100, nnlsalg = :nnls, rgn = nothing)
+    η = 0.0, ϵ = 1e-6, T = 100, nnlsalg = :nnls, rng = nothing)
 
     Xo, Po = homogeneousCoords(X, P)
     Xo, yo = regularizeProblem(Xo, y, Po, η)
 
     M, K = size(Po)
 
-    if rgn === nothing
-        rgn = rand
-    elseif isa(rgn, Int)
-        Random.seed!(rgn)
-        rgn = rand
+    if rng === nothing
+        rng = rand
+    elseif isa(rng, Int)
+        Random.seed!(rng)
+        rng = rand
     end
 
-    α = rgn(Float32, M)
-    β = (rgn(Float32, K) .- 0.5) .* 10
+    α = rng(Float32, M)
+    β = (rng(Float32, K) .- 0.5) .* 10
 
     initvals = (0, α, β, Inf64)
     loss = (a, b) -> norm(Xo * (Po .* a) * b - yo, 2)

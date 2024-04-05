@@ -54,11 +54,19 @@ P = [[1 0];
 
 specifies that the first and the second variable belongs to the first partition, while the third variable belongs to the second.
 
-You then just give your data to the `fit` function and use the `predict` function to make predictions. 
+You have then the choice to use either the standard interface or the MLJ interface. 
+
+### Standard interface
+
+The standard interface defines a `fit` function for each of the implemented algorithms. The function returns a tuple containing:
+- a `PartLSFitResult` object containing the model and the parameters found by the algorithm;
+- `nothing` (this is mandated by the MLJ interface, but it is not used in this case).
+- a NamedTuple containing some additional information.
 
 A complete example:
 
 ```julia
+
 using PartitionedLS
 
 X = [[1. 2. 3.]; 
@@ -77,22 +85,57 @@ P = [[1 0];
 
 
 # fit using the optimal algorithm 
-result_opt = fit(Opt, X, y, P, η = 0.0)
+result = fit(Opt, X, y, P, η = 0.0)
 
-# fit using the iterative algorithm
-result_alt = fit(Alt, X, y, P, η = 0.0)
-
-# fit using the BnB algorithm
-result_alt_nnls = fit(BnB, X, y, P)
 
 # Make predictions on the given data matrix. The function works
 # with results returned by anyone of the solvers.
-predict(result_opt.model, X)
+predict(result[1], X)
 ```
+
+### MLJ interface
+
+The MLJ interface is a allows you to use the library in a more MLJ-like fashion. The interface is defined by the [`PartLS`](@ref) model, which can be used in the MLJ framework. The model can be used in the same way as any other MLJ model.
+
+A complete example:
+
+```julia
+using MLJ
+using PartitionedLS
+
+X = [[1. 2. 3.]; 
+     [3. 3. 4.]; 
+     [8. 1. 3.]; 
+     [5. 3. 1.]]
+
+y = [1.;
+     1.;
+     2.;
+     3.]
+
+P = [[1 0]; 
+     [1 0]; 
+     [0 1]]
+
+# Define the model
+
+model = PartLS(P=P, Optimizer=Opt, η=0.0)
+
+# Fit the model
+mach = machine(model, X, y)
+fit!(mach)
+
+# Make predictions
+predict(mach, X)
+```
+
 
 ## API Documentation
 ```@docs
-PartLSModel
-fit
-predict
+PartLS
+PartLSFitResult
+PartitionedLS.fit
+PartitionedLS.predict
+PartitionedLS.homogeneousCoords
+PartitionedLS.regularizeProblem
 ```

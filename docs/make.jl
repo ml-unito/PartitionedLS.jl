@@ -1,11 +1,13 @@
 using PartitionedLS
+using MLJModelInterface
 using Documenter
 
 format = Documenter.HTML(sidebar_sitename=false)
 
 makedocs(
     format=format,
-    sitename="PartitionedLS.jl"
+    sitename="PartitionedLS.jl",
+    modules = [PartitionedLS]
 )
 
 # makedocs(

@@ -16,11 +16,14 @@ partition \$k\$.
 
 ## Result
 
-A tuple of the form: `(opt, a, b, t, P, nopen)`
+A tuple with the following fields:
 
-- `opt`: optimal value of the objective function (loss + regularization)
-- `model`: a [PartLSModel](@ref)
-- `nopen`: the number of nodes opened by the BnB algorithm
+
+1. a `PartLSFitResult` object containing the fitted model
+2. a `nothing` object
+3. a NamedTuple with fields: 
+    - `opt` containing the optimal value of the objective function
+    - `nopen` containing the number of open nodes in the branch and bound tree
 
 """
 function fit(::Type{BnB}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η = 0.0, nnlsalg = :nnls)
