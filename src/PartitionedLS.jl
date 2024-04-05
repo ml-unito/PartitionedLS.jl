@@ -224,4 +224,21 @@ function MLJModelInterface.predict(model::PartLS, fitresult, X)
   return PartitionedLS.predict(fitresult, X)
 end
 
+MLJModelInterface.metadata_pkg.(PartLS,
+    name = "PartitionedLS",
+    uuid = "19f41c5e-8610-11e9-2f2a-0d67e7c5027f", # see your Project.toml
+    url  = "https://github.com/ml-unito/PartitionedLS.jl.git",  # URL to your package repo
+    julia = true,          # is it written entirely in Julia?
+    license = "MIT",       # your package license
+    is_wrapper = false,    # does it wrap around some other package?
+)
+
+# Then for each model,
+MLJModelInterface.metadata_model(PartLS,
+    input_scitype   = Union{Table{AbstractVector{Continuous}}, AbstractMatrix{Continuous}},  # what input data is supported?
+    target_scitype  = AbstractVector{Continuous},           # for a supervised model, what target?
+    supports_weights = false,                                                  # does the model support sample weights?
+  	load_path    = "PartitionedLS.PartLS"
+    )
+
 end
