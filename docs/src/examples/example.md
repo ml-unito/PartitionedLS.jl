@@ -25,7 +25,7 @@ As an example, we collect 6 columns referring to the availability and quality of
 Other feature groups refer to overall quality of the construction work and materials employed ("Building Quality"), external facilities such as garages or swimming pools ("Outside Facilities"). 
 The $\beta$ values for the groups are as follows:
 
-![$\beta$ values as found by the `Opt` algorithm on the Ames House Prices dataset](assets/PartLS_beta.png)
+![$\beta$ values as found by the `Opt` algorithm on the Ames House Prices dataset](../assets/PartLS_beta.png)
 
 
 We note that the grouped solution enabled by the partitioned least squares formulation is able to give a high-level summary of the regression result. 
@@ -33,7 +33,7 @@ An analyst is therefore able to communicate easily to, e.g. an individual sellin
 A deeper analysis is of course possible by investigating the $\alpha$ values found by the algorithm.
 For instance, let consider the contributions to the ``Outside Facilities'':
 
-![$\alpha$ values as found by the `Opt` algorithm on the Ames House Prices dataset for the "OutsideFacilities" group](assets/PartLS_alpha_OutsideFacilities.png)
+![$\alpha$ values as found by the `Opt` algorithm on the Ames House Prices dataset for the "OutsideFacilities" group](../assets/PartLS_alpha_OutsideFacilities.png)
 
 
 Here, one is able to notice that garage quality has the biggest impact on the property's price, which is potentially actionable knowledge. 

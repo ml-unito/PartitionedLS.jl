@@ -7,7 +7,9 @@ format = Documenter.HTML(sidebar_sitename=false)
 makedocs(
     format=format,
     sitename="PartitionedLS.jl",
-    modules = [PartitionedLS]
+    modules = [PartitionedLS],
+    pages = ["Documentation" => "index.md", 
+            "Example" => "examples/example.md"]
 )
 
 # makedocs(

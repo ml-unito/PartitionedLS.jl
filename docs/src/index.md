@@ -1,6 +1,8 @@
 # Partitioned Least Squares
 
-Linear least squares is one of the most widely used regression methods among scientists in many fields. The simplicity of the model allows this method to be used when data is scarce and it is usually appealing to practitioners that need to gather some insight into the problem by inspecting the values of the learnt parameters. PartitionedLS is a variant of the linear least squares model allowing practitioners to partition the input features into groups of variables that they require to contribute similarly to the final result. 
+Linear least squares is one of the most widely used regression methods among scientists in many fields. The simplicity of the model allows this method to be used when data is scarce and it is usually appealing to practitioners that need to gather some insight into the problem by inspecting the values of the learnt parameters. PartitionedLS is a variant of the linear least squares model allowing practitioners to partition the input features into groups of variables that they require to contribute similarly to the final result.
+
+An example of analysing a dataset using PartitionedLS is given [here](examples/example.md)
 
 ## The model
 
