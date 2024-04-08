@@ -26,7 +26,7 @@ A tuple with the following fields:
     - `nopen` containing the number of open nodes in the branch and bound tree
 
 """
-function fit(::Type{BnB}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}; η = 0.0, nnlsalg = :nnls)
+function fit(::Type{BnB}, X::Array{Float64,2}, y::AbstractArray{Float64,1}, P::Array{Int,2}; η=0.0, nnlsalg=:nnls)
     Xo, Po = homogeneousCoords(X, P)
     Xo, yo = regularizeProblem(Xo, y, Po, η)
     Σ::Array{Int,1} = []
@@ -65,7 +65,7 @@ end
 #     CSV.write("nnls_problem.csv", df)
 # end
 
-function lower_bound(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, Σ::Array{Int,1}, nnlsalg)
+function lower_bound(X::Array{Float64,2}, y::AbstractArray{Float64,1}, P::Array{Int,2}, Σ::Array{Int,1}, nnlsalg)
     posConstr = Σ[findall(>(0), Σ)]
     negConstr = -Σ[findall(<(0), Σ)]
 
@@ -90,7 +90,7 @@ function lower_bound(X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2}, 
     return norm(XX * αα - y), α
 end
 
-function fit_BnB(X::Array{Float64,2}, y::Array{Float64,1}, P::Matrix{Int}, μ::Float64, Σ::Array{Int,1};
+function fit_BnB(X::Array{Float64,2}, y::AbstractArray{Float64,1}, P::Matrix{Int}, μ::Float64, Σ::Array{Int,1};
     depth = 0,
     nnlsalg = :pivot)::Tuple{Float64,Vector{Float64},Int}
     @debug "BnB new node"

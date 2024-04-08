@@ -45,7 +45,7 @@ A Tuple with the following fields:
 2. a `nothing` object
 3. a NamedTuple with a field `opt` containing the optimal value of the objective function
 """
-function fit(::Type{Alt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
+function fit(::Type{Alt}, X::Array{Float64,2}, y::AbstractArray{Float64,1}, P::Array{Int,2};
     η = 0.0, ϵ = 1e-6, T = 100, nnlsalg = :nnls, rng = nothing)
 
     Xo, Po = homogeneousCoords(X, P)
