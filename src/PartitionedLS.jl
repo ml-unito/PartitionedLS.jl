@@ -7,7 +7,6 @@ using LinearAlgebra
 using NonNegLeastSquares
 using DocStringExtensions
 using MLJModelInterface
-using MLJBase
 using Tables
 using Random
 
@@ -177,7 +176,7 @@ model = PartLS(P=P, Optimizer=Alt, rng=123)
 """
 MLJModelInterface.@mlj_model mutable struct PartLS <: MLJModelInterface.Deterministic
   Optimizer::Union{Type{Opt},Type{Alt},Type{BnB}} = Opt
-  P::Matrix{Int} = 0.5::(all(_[i, j] == 0 || _[i, j] == 1 for i in range(1, size(_, 1)) for j in range(1, size(_, 2))))
+  P::Matrix{Int} = Array{Int}(undef, 0,0)::(all(_[i, j] == 0 || _[i, j] == 1 for i in range(1, size(_, 1)) for j in range(1, size(_, 2))))
   η::Float64 = 0.0::(_ >= 0)
   ϵ::Float64 = 1e-6::(_ > 0)
   T::Int = 100::(_ > 0)
@@ -199,13 +198,20 @@ It conforms to the MLJ interface.
 
 """
 function MLJModelInterface.fit(m::PartLS, verbosity, X, y)
-  X = MLJBase.matrix(X)
+  X = MLJModelInterface.matrix(X)
+  y = vec(y)
+  P = m.P
 
-  if m.Optimizer == Alt
-    return PartitionedLS.fit(Alt, X, y, m.P, η=m.η, ϵ=m.ϵ, T=m.T, rng=m.rng)
+  if size(P, 1) == 0
+    @warn "P is empty, using a single partition: this corresponds to resort to a standard least squares problem and is likely not what you want."
+    P = ones(Int, size(X, 2), 1)
   end
 
-  return PartitionedLS.fit(m.Optimizer, X, y, m.P, η=m.η)
+  if m.Optimizer == Alt
+    return PartitionedLS.fit(Alt, X, y, P, η=m.η, ϵ=m.ϵ, T=m.T, rng=m.rng)
+  end
+
+  return PartitionedLS.fit(m.Optimizer, X, y, P, η=m.η)
 end
 
 function MLJModelInterface.fitted_params(model::PartLS, fitresult)
@@ -220,7 +226,7 @@ It conforms to the MLJ interface.
 """
 
 function MLJModelInterface.predict(model::PartLS, fitresult, X)
-  X = MLJBase.matrix(X)
+  X = MLJModelInterface.matrix(X)
   return PartitionedLS.predict(fitresult, X)
 end
 

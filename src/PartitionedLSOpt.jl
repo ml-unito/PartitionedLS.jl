@@ -69,7 +69,7 @@ result = fit(Opt, X, y, P)
 ```
 
 """
-function fit(::Type{Opt}, X::Array{Float64,2}, y::Array{Float64,1}, P::Array{Int,2};
+function fit(::Type{Opt}, X::Array{Float64,2}, y::AbstractArray{Float64,1}, P::Array{Int,2};
     η=0.0, nnlsalg=:nnls, returnAllSolutions=false)
 
     @debug "Opt algorithm fitting  using non negative least square algorithm"

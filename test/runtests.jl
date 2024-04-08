@@ -1,6 +1,7 @@
 using PartitionedLS
 using Test
 using MLJBase
+import MLJTestInterface
 
 @testset "Testing PartitionedLS" verbose=true begin
 
@@ -118,4 +119,16 @@ using MLJBase
                end
           end
      end
+
+    @testset "generic MLJ interface tests" begin
+        failures, summary = MLJTestInterface.test(
+            [PartLS,],
+            MLJTestInterface.make_regression()...;
+            mod=@__MODULE__,
+            verbosity=2, # bump to debug
+            throw=true, # set to true to debug
+        )
+        @test isempty(failures)
+    end
+
 end
