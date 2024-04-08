@@ -226,7 +226,7 @@ It conforms to the MLJ interface.
 """
 
 function MLJModelInterface.predict(model::PartLS, fitresult, X)
-  X = MLJBase.matrix(X)
+  X = MLJModelInterface.matrix(X)
   return PartitionedLS.predict(fitresult, X)
 end
 
