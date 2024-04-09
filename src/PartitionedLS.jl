@@ -30,16 +30,16 @@ struct PartLSFitResult
   The values of the α variables. For each partition ``k``, it holds the values of the α variables
   are such that ``\\sum_{i \\in P_k} \\alpha_{k} = 1``.
   """
-  α::Vector{Float64}
+  α::Vector{AbstractFloat}
   """
   The values of the β variables. For each partition ``k``, ``\\beta_k`` is the coefficient that multiplies the
   features in the k-th partition.
   """
-  β::Vector{Float64}
+  β::Vector{AbstractFloat}
   """
   The intercept term of the model.
   """
-  t::Float64
+  t::(AbstractFloat)
   """
   The partition matrix. It is a binary matrix where each row corresponds to a partition and each column
   corresponds to a feature. The element ``P_{k, i} = 1`` if feature ``i`` belongs to partition ``k``.
@@ -71,7 +71,7 @@ homogeneous version of X and Po is the homogeneous version of P.
   - `Xo`: the homogeneous version of X
   - `Po`: the homogeneous version of P
 """
-function homogeneousCoords(X, P::Array{Int,2})
+function homogeneousCoords(X::Matrix{T}, P::Matrix{Int})::Tuple{Matrix{T}, Matrix{Int}} where T
   Xo = hcat(X, ones(size(X, 1), 1))
   Po::Matrix{Int} = vcat(hcat(P, zeros(size(P, 1))), vec1(size(P, 2) + 1))
 
@@ -102,7 +102,7 @@ The point of this change is that when the objective function is evaluated as ``m
   the matrix contributes to the loss with a factor of  ``η \\sum \\|w_i\\|^2`` . This is equivalent to adding a regularization
   term to the objective function.
 """
-function regularizeProblem(X, y, P, η)
+function regularizeProblem(X::Matrix{T}, y::AbstractVector{T}, P::Matrix{Int}, η::AbstractFloat)::Tuple{Matrix{T}, Vector{T}} where T
   if η == 0
     return X, y
   end
@@ -111,7 +111,7 @@ function regularizeProblem(X, y, P, η)
   yn = y
   for k in 1:size(P, 2)
     v = P[:, k] .== 1
-    v = reshape(convert(Vector{Float64}, v), 1, :)
+    v = reshape(convert(Vector{<:AbstractFloat}, v), 1, :)
     Xn = vcat(Xn, sqrt(η) .* v)
     yn = vcat(yn, zeros(1))
   end
@@ -126,7 +126,7 @@ end
 ## Result
 the prediction for the partitioned least squares problem with solution α, β, t over the dataset X and partition matrix P
 """
-function predict(α::Vector{Float64}, β::Vector{Float64}, t::Float64, P::Matrix{Int}, X::Matrix{Float64})
+function predict(α::AbstractVector{<:AbstractFloat}, β::AbstractVector{<:AbstractFloat}, t::AbstractFloat, P::Matrix{Int}, X::Matrix{<:AbstractFloat})
   X * (P .* α) * β .+ t
 end
 
@@ -144,7 +144,7 @@ Make predictions for the datataset `X` using the PartialLS model `model`.
 ## Return
  the predictions of the given model on examples in X.
 """
-function predict(model::PartLSFitResult, X::Array{Float64,2})
+function predict(model::PartLSFitResult, X::Array{<:AbstractFloat,2})
   (; α, β, t, P) = model
   predict(α, β, t, P, X)
 end
@@ -179,7 +179,7 @@ In MLJ or MLJBase, bind an instance `model` to data with
 
 where
 
-- `X`: any matrix with element type `Float64`, or any table with columns of type `Float64`
+- `X`: any matrix with element type `<:AbstractFloat`, or any table with columns of type `<:AbstractFloat`
 
 Train the machine using `fit!(mach)`.
 
@@ -285,8 +285,8 @@ interface.
 MMI.@mlj_model mutable struct PartLS <: MMI.Deterministic
   Optimizer::Union{Type{Opt},Type{Alt},Type{BnB}} = Opt
   P::Matrix{Int} = Array{Int}(undef, 0,0)::(all(_[i, j] == 0 || _[i, j] == 1 for i in range(1, size(_, 1)) for j in range(1, size(_, 2))))
-  η::Float64 = 0.0::(_ >= 0)
-  ϵ::Float64 = 1e-6::(_ > 0)
+  η::AbstractFloat = 0.0::(_ >= 0)
+  ϵ::AbstractFloat = 1e-6::(_ > 0)
   T::Int = 100::(_ > 0)
   rng::Union{Nothing,Int,AbstractRNG} = nothing
 end
@@ -370,7 +370,7 @@ In MLJ or MLJBase, bind an instance `model` to data with
 
 where
 
-- `X`: any matrix with element scitype `Float64,2`
+- `X`: any matrix with element scitype `<:AbstractFloat,2`
 
 Train the machine using `fit!(mach)`.
 

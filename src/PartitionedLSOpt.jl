@@ -44,7 +44,7 @@ function cleanupResult(::Type{Opt}, result, P)
 end
 
 """
-    $(TYPEDSIGNATURES)
+    #(TYPEDSIGNATURES)
 
 Fits a PartialLS Regression model to the given data and resturns the learnt model (see the Result section). 
 It uses a coplete enumeration strategy which is exponential in K, but guarantees to find the optimal solution.
@@ -69,7 +69,7 @@ result = fit(Opt, X, y, P)
 ```
 
 """
-function fit(::Type{Opt}, X::Array{Float64,2}, y::AbstractArray{Float64,1}, P::Array{Int,2};
+function fit(::Type{Opt}, X::Array{<:AbstractFloat,2}, y::AbstractArray{<:AbstractFloat,1}, P::Array{Int,2};
     η=0.0, nnlsalg=:nnls, returnAllSolutions=false)
 
     @debug "Opt algorithm fitting  using non negative least square algorithm"

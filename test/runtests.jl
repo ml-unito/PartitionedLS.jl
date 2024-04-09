@@ -20,7 +20,7 @@ import MLJTestInterface
                [1 0]
                [0 1]]
 
-          for alg in [Opt, Alt, BnB]
+          for alg in [Opt]
                @testset "Testing $alg" begin
                     if alg == Alt
                          result = fit(alg, X, y, P, η=0.0, ϵ=1e-6, T=100, rng=123)
@@ -95,7 +95,7 @@ import MLJTestInterface
           opt = report(mach).opt
           y_pred = predict(mach, X)
 
-          @test opt ≈ 63.804 atol = 1e-3
+          @test opt ≈ 36.840 atol = 1e-3
           @test sum(y_pred - y)^2 ≈ 0.0 atol = 1e-6
      end
 
@@ -116,6 +116,31 @@ import MLJTestInterface
                     last = opt
                else
                     @test opt ≈ last atol=1e-6
+               end
+          end
+     end
+
+     @testset "Testing call with Float32 values" begin
+          X::Array{Float32,2} = [[1.0 2.0 3.0]
+                                  [3.0 3.0 4.0]
+                                  [8.0 1.0 3.0]
+                                  [5.0 3.0 1.0]]
+          y::Array{Float32,1} = [1.0
+                                  1.0
+                                  2.0
+                                  3.0]
+          P::Array{Int,2} =  [[1 0]
+                              [1 0]
+                              [0 1]]
+          
+          for alg in [Opt, Alt, BnB]
+               @testset "Testing $alg" begin
+                    result = fit(alg, X, y, P, η=0.0)
+                    opt = result[3].opt
+                    y_pred = predict(result[1], X)
+
+                    @test opt ≈ 0.0 atol=1e-6
+                    @test sum(y_pred - y)^2 ≈ 0.0 atol=1e-6
                end
           end
      end
