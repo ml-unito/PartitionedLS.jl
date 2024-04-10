@@ -64,7 +64,8 @@ Rewrites X and P in homogeneous coordinates. The result is a tuple (Xo, Po) wher
 homogeneous version of X and Po is the homogeneous version of P.
 
 ## Arguments
-  - `X`: the data matrix
+  - `X`: any matrix or table with `Continuous` element scitype. 
+         Check column scitypes of a table `X` with `schema(X)`. 
   - `P`: the partition matrix
 
 ## Return
@@ -84,8 +85,9 @@ objective function as a sum of squares of the α variables. The regularization
 parameter η controls the strength of the regularization.
 
 ## Arguments
-  - `X`: the data matrix
-  - `y`: the target vector
+  - `X`: any matrix or table with `Continuous` element scitype. 
+         Check column scitypes of a table `X` with `schema(X)`.
+  - `y`: any vector with `Continuous` element scitype. Check scitype with `scitype(y)`. 
   - `P`: the partition matrix
   - `η`: the regularization parameter
 
@@ -139,7 +141,9 @@ Make predictions for the datataset `X` using the PartialLS model `model`.
 
 ## Arguments
   - `model`: a [PartLSFitResult](@ref)
-  - `X`: the data containing the examples for which the predictions are sought
+  - `X`: any matrix or table with `Continuous` element scitype containing the 
+         examples for which the predictions are sought. Check column scitypes 
+         of a table `X` with `schema(X)`.
 
 ## Return
  the predictions of the given model on examples in X.
@@ -179,8 +183,9 @@ In MLJ or MLJBase, bind an instance `model` to data with
 
 where
 
-- `X`: any matrix with element type `<:AbstractFloat`, or any table with columns of type `<:AbstractFloat`
-
+  - `X`: any matrix or table with `Continuous` element scitype. 
+         Check column scitypes of a table `X` with `schema(X)`.
+         
 Train the machine using `fit!(mach)`.
 
 ## Hyper-parameters
@@ -301,8 +306,9 @@ It conforms to the MLJ interface.
 ## Arguments
 - `m`: A [`PartLS`](@ref) model to fit
 - `verbosity`: the verbosity level
-- `X`: the data matrix
-- `y`: the target vector
+- `X`: any matrix or table with `Continuous` element scitype. 
+       Check column scitypes of a table `X` with `schema(X)`.
+- `y`: any vector with `Continuous` element scitype. Check scitype with `scitype(y)`. 
 
 """
 function MMI.fit(m::PartLS, verbosity, X, y)
@@ -332,7 +338,6 @@ end
 Make predictions for the datataset `X` using the PartitionedLS model `model`.
 It conforms to the MLJ interface.
 """
-
 function MMI.predict(model::PartLS, fitresult, X)
   X = MMI.matrix(X)
   return PartitionedLS.predict(fitresult, X)
@@ -355,78 +360,3 @@ MMI.metadata_model(PartLS,
         load_path    = "PartitionedLS.PartLS"
     )
 end
-
-
-"""
-#(MMI.doc_header(PartLS))
-
-Use this model to fit a partitioned least squares model to data.
-
-# Training data
-
-In MLJ or MLJBase, bind an instance `model` to data with
-
-    mach = machine(model, X, y)
-
-where
-
-- `X`: any matrix with element scitype `<:AbstractFloat,2`
-
-Train the machine using `fit!(mach)`.
-
-# Hyper-parameters
-
-- `Optimizer`: the optimization algorithm to use. It can be `Opt`, `Alt` or `BnB`.
-- `P`: the partition matrix. It is a binary matrix where each row corresponds to a partition and each column
-  corresponds to a feature. The element `P_{k, i} = 1` if feature `i` belongs to partition `k`.
-- `η`: the regularization parameter. It controls the strength of the regularization.
-- `ϵ`: the tolerance parameter. It is used to determine when the Alt optimization algorithm has converged. Only used by the `Alt` algorithm.
-- `T`: the maximum number of iterations. It is used to determine when to stop the Alt optimization algorithm has converged. Only used by the `Alt` algorithm.
-- `rng`: the random number generator to use.
-  - If `nothing`, the global random number generator `rand` is used.
-  - If an integer, the global number generator `rand` is used after seeding it with the given integer.
-  - If an object of type `AbstractRNG`, the given random number generator is used.
-
-# Operations
-
-- `predict(mach, Xnew)`: return the predictions of the model on new data `Xnew`
-
-
-# Fitted parameters
-
-The fields of `fitted_params(mach)` are:
-
-- `α`: the values of the α variables. For each partition `k`, it holds the values of the α variables
-  are such that ``\\sum_{i \\in P_k} \\alpha_{k} = 1``.
-- `β`: the values of the β variables. For each partition `k`, `β_k` is the coefficient that multiplies the features in the k-th partition.
-- `t`: the intercept term of the model.
-- `P`: the partition matrix. It is a binary matrix where each row corresponds to a partition and each column
-  corresponds to a feature. The element `P_{k, i} = 1` if feature `i` belongs to partition `k`.
-
-# Examples
-
-```julia
-PartLS = @load FooRegressor pkg=PartLS
-
-
-X = [[1. 2. 3.];
-     [3. 3. 4.];
-     [8. 1. 3.];
-     [5. 3. 1.]]
-
-y = [1.;
-     1.;
-     2.;
-     3.]
-
-P = [[1 0];
-     [1 0];
-     [0 1]]
-
-
-# fit using the optimal algorithm
-result = fit(Opt, X, y, P, η = 0.0)
-y_hat = predict(result.model, X)
-```
-
-"""

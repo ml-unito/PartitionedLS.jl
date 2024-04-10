@@ -7,10 +7,11 @@ Implements the Branch and Bound algorithm to fit a Partitioned Least Squres mode
 
 ## Arguments
 
-* `X`: \$N × M\$ matrix describing the examples
-* `y`: \$N\$ vector with the output values for each example
-* `P`: \$M × K\$ matrix specifying how to partition the \$M\$ attributes into \$K\$ subsets. \$P_{m,k}\$ should be 1 if attribute number \$m\$ belongs to
-partition \$k\$.
+* `X`: \$N × M\$ matrix or table with `Continuous` element scitype containing the 
+         examples for which the predictions are sought. Check column scitypes 
+         of a table `X` with `schema(X)`.
+* `y`: \$N\$ vector with `Continuous` element scitype. Check scitype with `scitype(y)`. 
+* `P`: \$M × K\$ `Int` matrix specifying how to partition the \$M\$ attributes into \$K\$ subsets. \$P_{m,k}\$ should be 1 if attribute number \$m\$ belongs to partition \$k\$.
 * `η`: regularization factor, higher values implies more regularized solutions (default: 0.0)
 * nnlsalg: the kind of nnls algorithm to be used during solving. Possible values are :pivot, :nnls, :fnnls (default: :nnls)
 

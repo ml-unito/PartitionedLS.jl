@@ -20,8 +20,11 @@ The Partitioned Least Squares model is formally defined as:
 
 where: 
 
-- ``\mathbf{X}`` is ``N \times M`` data matrix;
-- ``\mathbf{P}`` is a user-defined partition matrix having ``K`` columns (one for each element of the partition), ``M`` rows, and containing ``1`` in ``P_{i,j}`` if the ``i``-th attribute belongs to the ``j``-th partition and ``0`` otherwise;
+* ``\mathbf{X}`` is a ``N × M`` matrix or table with `Continuous` element scitype containing the 
+         examples for which the predictions are sought. Check column scitypes 
+         of a table `X` with `schema(X)`.
+* ``\mathbf{y}`` is a ``N`` vector with `Continuous` element scitype. Check scitype with `scitype(y)`. 
+* ``\mathbf{P}`` is a ``M × K`` `Int` matrix specifying how to partition the ``M`` attributes into ``K`` subsets. ``P_{m,k}`` should be 1 if attribute number ``m`` belongs to partition ``k``.
 - ``\mathbf{\beta}`` is a vector weighting the importance of each set of attributes in the partition;
 - ``\mathbf{\alpha}`` is a vector weighting the importance of each attribute within one of the sets in the partition. Note that the constraints imply that for each set in the partition the weights of the corresponding ``\alpha`` variables are all positive and sum to ``1``.
 

@@ -29,9 +29,11 @@ more numerically stable with respect to `fit(Alt, ...)``.
 
 ## Arguments
 
-* `X`: \$N × M\$ matrix describing the examples
-* `y`: \$N\$ vector with the output values for each example
-* `P`: \$M × K\$ matrix specifying how to partition the \$M\$ attributes into \$K\$ subsets. \$P_{m,k}\$ should be 1 if attribute number \$m\$ belongs to partition \$k\$.
+* `X`: \$N × M\$ matrix or table with `Continuous` element scitype containing the 
+         examples for which the predictions are sought. Check column scitypes 
+         of a table `X` with `schema(X)`.
+* `y`: \$N\$ vector with `Continuous` element scitype. Check scitype with `scitype(y)`. 
+* `P`: \$M × K\$ `Int` matrix specifying how to partition the \$M\$ attributes into \$K\$ subsets. \$P_{m,k}\$ should be 1 if attribute number \$m\$ belongs to partition \$k\$.
 * `η`: regularization factor, higher values implies more regularized solutions. Default is 0.0.
 * `T`: number of alternating loops to be performed. Default is 100.
 * `ϵ`: minimum relative improvement in the objective function before stopping the optimization. Default is 1e-6
