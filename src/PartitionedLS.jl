@@ -9,6 +9,7 @@ using NonNegLeastSquares
 using DocStringExtensions
 using Tables
 using Random
+using PrecompileTools
 
 import MLJModelInterface.fit
 import MLJModelInterface.fitted_params
@@ -359,4 +360,39 @@ MMI.metadata_model(PartLS,
     supports_weights = false,                                                  # does the model support sample weights?
         load_path    = "PartitionedLS.PartLS"
     )
+
+@compile_workload begin
+  using MLJBase
+
+  X = [[1.0 2.0 3.0]
+    [3.0 3.0 4.0]
+    [8.0 1.0 3.0]
+    [5.0 3.0 1.0]]
+
+  y = [1.0
+    1.0
+    2.0
+    3.0]
+
+  P = [[1 0]
+    [1 0]
+    [0 1]]
+
+
+
+  for alg in [Opt, Alt, BnB]
+    model = PartLS(P=P, Optimizer=alg, rng=123)
+    mach = machine(model, X, y)
+    fit!(mach, verbosity=0)
+    model, _, _ = fit(alg, X, y, P, η=0.0)
+
+    opt = report(mach).opt
+    y_pred = predict(mach, X)
+    y_pred = predict(model, X)
+  end
+
+end
+
+
+
 end
