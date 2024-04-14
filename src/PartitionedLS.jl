@@ -163,7 +163,7 @@ include("PartitionedLSBnB.jl")
     PartLS
 
 A model type for fitting a partitioned least squares model to data. Both an MLJ and native
-interfacew are provided.
+interface are provided.
 
 # MLJ Interface
 
@@ -186,6 +186,7 @@ where
 
   - `X`: any matrix or table with `Continuous` element scitype. 
          Check column scitypes of a table `X` with `schema(X)`.
+  - `y`: any vector with `Continuous` element scitype. Check scitype with `scitype(y)`. 
          
 Train the machine using `fit!(mach)`.
 
@@ -362,8 +363,6 @@ MMI.metadata_model(PartLS,
     )
 
 @compile_workload begin
-  using MLJBase
-
   X = [[1.0 2.0 3.0]
     [3.0 3.0 4.0]
     [8.0 1.0 3.0]
@@ -381,13 +380,7 @@ MMI.metadata_model(PartLS,
 
 
   for alg in [Opt, Alt, BnB]
-    model = PartLS(P=P, Optimizer=alg, rng=123)
-    mach = machine(model, X, y)
-    fit!(mach, verbosity=0)
     model, _, _ = fit(alg, X, y, P, η=0.0)
-
-    opt = report(mach).opt
-    y_pred = predict(mach, X)
     y_pred = predict(model, X)
   end
 
