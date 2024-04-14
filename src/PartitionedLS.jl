@@ -169,7 +169,7 @@ interface are provided.
 
 From MLJ, the type can be imported using
 
-  PartLS = @load PartLS pkg=PartitionedLS
+    PartLS = @load PartLS pkg=PartitionedLS
 
 Construct an instance with default hyper-parameters using the syntax `model =
 PartLS()`. Provide keyword arguments to override hyper-parameter defaults, as in
@@ -286,7 +286,6 @@ y_hat = predict(result.model, X)
 
 For other `fit` keyword options, refer to the "Hyper-parameters" section for the MLJ
 interface.
-
 """
 MMI.@mlj_model mutable struct PartLS <: MMI.Deterministic
   Optimizer::Union{Type{Opt},Type{Alt},Type{BnB}} = Opt
