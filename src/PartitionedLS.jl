@@ -9,6 +9,7 @@ using NonNegLeastSquares
 using DocStringExtensions
 using Tables
 using Random
+using PrecompileTools
 
 import MLJModelInterface.fit
 import MLJModelInterface.fitted_params
@@ -162,7 +163,7 @@ include("PartitionedLSBnB.jl")
     PartLS
 
 A model type for fitting a partitioned least squares model to data. Both an MLJ and native
-interfacew are provided.
+interface are provided.
 
 # MLJ Interface
 
@@ -185,6 +186,7 @@ where
 
   - `X`: any matrix or table with `Continuous` element scitype. 
          Check column scitypes of a table `X` with `schema(X)`.
+  - `y`: any vector with `Continuous` element scitype. Check scitype with `scitype(y)`. 
          
 Train the machine using `fit!(mach)`.
 
@@ -359,4 +361,31 @@ MMI.metadata_model(PartLS,
     supports_weights = false,                                                  # does the model support sample weights?
         load_path    = "PartitionedLS.PartLS"
     )
+
+@compile_workload begin
+  X = [[1.0 2.0 3.0]
+    [3.0 3.0 4.0]
+    [8.0 1.0 3.0]
+    [5.0 3.0 1.0]]
+
+  y = [1.0
+    1.0
+    2.0
+    3.0]
+
+  P = [[1 0]
+    [1 0]
+    [0 1]]
+
+
+
+  for alg in [Opt, Alt, BnB]
+    model, _, _ = fit(alg, X, y, P, η=0.0)
+    y_pred = predict(model, X)
+  end
+
+end
+
+
+
 end
