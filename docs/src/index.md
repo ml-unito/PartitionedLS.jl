@@ -106,7 +106,8 @@ A complete example:
 
 ```julia
 using MLJ
-using PartitionedLS
+
+PartLS = @load PartLS, pkg=PartitionedLS
 
 X = [[1. 2. 3.]; 
      [3. 3. 4.]; 
