@@ -169,12 +169,11 @@ interface are provided.
 
 From MLJ, the type can be imported using
 
-PartLS = @load PartLS pkg=PartitionedLS
+  PartLS = @load PartLS pkg=PartitionedLS
 
 Construct an instance with default hyper-parameters using the syntax `model =
 PartLS()`. Provide keyword arguments to override hyper-parameter defaults, as in
 `model = PartLS(P=...)`.
-
 
 ## Training data
 
