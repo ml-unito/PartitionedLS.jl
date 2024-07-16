@@ -55,7 +55,7 @@ You can choose between three algorithms to solve the problem: `Opt`, `Alt`, and 
 
 # Additional Resources
 
-For theoretical insights into PartitionedLS, please refer to [this paper](https://arxiv.org/abs/2006.16202).
+For theoretical insights into PartitionedLS, please refer to [this paper](https://rdcu.be/dNTXq).
 
 To access installation instructions and for the documentation of the library visit the [GitHub Pages of this project](https://ml-unito.github.io/PartitionedLS.jl/).
 
